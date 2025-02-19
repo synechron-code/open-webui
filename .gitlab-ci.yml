@@ -4,11 +4,11 @@ include:
     file:
       - /templates/jobs/.backstage-publish-docs.yaml
       - /templates/jobs/.acr-build.yaml
-  #     - /templates/jobs/.python-dependency-check.yaml
-  #     - /templates/jobs/.sast-check.yaml
-  #     - /templates/jobs/.code-quality-check.yaml
-  #     - /templates/jobs/.markdownlint.yaml
-  # - template: Security/Secret-Detection.gitlab-ci.yml
+      - /templates/jobs/.python-dependency-check.yaml
+      - /templates/jobs/.sast-check.yaml
+      - /templates/jobs/.code-quality-check.yaml
+      - /templates/jobs/.markdownlint.yaml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 variables:
   SEM_VER: $CI_COMMIT_TAG

@@ -1,0 +1,40 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    backstage.io/adr-location: docs/adr
+    backstage.io/techdocs-ref: dir:.
+  description: Nexus Chat v3 (Open WebUI)
+  name: open-webui
+  tags:
+  - python
+  - fastapi
+  - svelte
+  - typescript
+  title: Nexus Chat v3 (Open WebUI)
+spec:
+  dependsOn:
+  - component:default/openwebui-terraform
+  - component:default/openwebui-gitops
+  - component:default/azure-shared-services
+  - component:default/synechron-openai-support
+  - component:default/nexus-shared-services
+  lifecycle: uat
+  owner: group:default/cloud-devops-internal-cloud-platforms-synechron-openai-chat
+  providesApis:
+  - open-webui-api
+  system: nexus-chat
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  description: Open WebUI API for Nexus Chat v3
+  name: open-webui-api
+spec:
+  definition:
+    $text: ./openapi.json
+  lifecycle: production
+  owner: group:default/cloud-devops-internal-cloud-platforms-synechron-openai-chat
+  system: nexus-chat
+  type: openapi

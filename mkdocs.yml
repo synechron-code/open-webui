@@ -1,0 +1,9 @@
+site_name: open-webui
+docs_dir: docs
+nav:
+  - Home: ../README.md
+  - Apache: apache.md
+  - Contribution: CONTRIBUTING.md
+  - Security: security.md
+plugins:
+  - techdocs-core

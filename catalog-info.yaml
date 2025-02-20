@@ -5,7 +5,7 @@ metadata:
     backstage.io/adr-location: docs/adr
     backstage.io/techdocs-ref: dir:.
   description: Nexus Chat v3 (based on Open WebUI) is an extensible, feature-rich, and user-friendly self-hosted AI platform designed to operate entirely offline. It supports various LLM runners like Ollama and OpenAI-compatible APIs, with built-in inference engine for RAG, making it a powerful AI deployment solution.
-  name: nexuschat
+  name: nexus-chat-v3
   tags:
   - python
   - fastapi
@@ -20,22 +20,37 @@ spec:
   - component:default/synechron-openai-support
   - component:default/nexus-shared-services
   lifecycle: uat
-  owner: group:default/ai
+  owner: group:default/ai-nexus
   providesApis:
-  - nexuschat-api
-  system: nexus-chat
+  - nexus-chat-v3-api
+  system: nexus-chat-v3
   type: service
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   description: Nexus Chat v3 API (based on Open WebUI) provides API access to features and functionality of Nexus Chat v3 (Open WebUI) platform.
-  name: nexuschat-api
+  name: nexus-chat-v3-api
   title: Nexus Chat v3 API (Open WebUI)
 spec:
   definition:
     $text: ./openapi.json
-  lifecycle: production
-  owner: group:default/ai
-  system: nexus-chat
+  lifecycle: uat
+  owner: group:default/ai-nexus
+  system: nexus-chat-v3
   type: openapi
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: nexuschat.synechron.com
+  title:  Nexus Chat v3
+  description: Synechron's Nexus Chat v3 application (powered by Open WebUI)
+  links:
+  - url: https://nexuschat.synechron.com
+    title: Nexus Chat v3 Production
+  - url: https://nexus-beta.synechron.com
+    title: Nexus Chat v3 UAT
+spec:
+  owner: group:default/ai-nexus
+  domain: nexus

@@ -57,7 +57,7 @@
 	onMount(async () => {
 		taskConfig = await getTaskConfig(localStorage.token);
 
-		promptSuggestions = $config?.default_prompt_suggestions;
+		promptSuggestions = $config?.default_prompt_suggestions ?? [];
 		backgroundImageUrl = $config?.chat_background_image ?? $config?.default_background_image;
 		banners = await getBanners(localStorage.token);
 	});

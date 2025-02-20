@@ -20,7 +20,7 @@ spec:
   - component:default/synechron-openai-support
   - component:default/nexus-shared-services
   lifecycle: uat
-  owner: group:default/ai-nexus
+  owner: group:default/ai-nexus-chat
   providesApis:
   - nexus-chat-v3-api
   system: nexus-chat-v3
@@ -36,7 +36,7 @@ spec:
   definition:
     $text: ./openapi.json
   lifecycle: uat
-  owner: group:default/ai-nexus
+  owner: group:default/ai-nexus-chat
   system: nexus-chat-v3
   type: openapi
 ---
@@ -52,5 +52,5 @@ metadata:
   - url: https://nexus-beta.synechron.com
     title: Nexus Chat v3 UAT
 spec:
-  owner: group:default/ai-nexus
+  owner: group:default/ai-nexus-chat
   domain: nexus

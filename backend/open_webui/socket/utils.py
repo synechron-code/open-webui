@@ -5,22 +5,40 @@ import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-logger.propagate = True
+logger.propagate=True
 
 class RedisService:
-    def __init__(self, redis_url, ssl_ca_certs, password):
-        self.enabled = False
+    _instance = None
+
+    def __new__(cls, redis_url, ssl_ca_certs=None, username=None, password=None):
+        if cls._instance is None:
+            cls._instance = super(RedisService, cls).__new__(cls)
+            cls._instance._initialize(redis_url, ssl_ca_certs, username, password)
+        return cls._instance
+
+    def _initialize(self, redis_url, ssl_ca_certs=None, username=None, password=None):
+        if not password:
+            from azure.identity import DefaultAzureCredential
+            cred = DefaultAzureCredential()
+            token = cred.get_token("https://redis.azure.com/.default")
+            password = token.token
+
         try:
-            self.client = redis.Redis.from_url(url=redis_url,
-                                      password=password,
-                                      decode_responses=True,
-                                      ssl_ca_certs=ssl_ca_certs,
-                                      socket_timeout=5,
-                                      )
+            logger.info(f"redis_url: {redis_url}")
+            logger.info(f"redis_username: {username}")
+            logger.info(f"redis_password: {password}")
+            logger.info(f"redis_ssl_ca_certs: {ssl_ca_certs}")
+            self.client = redis.Redis.from_url(
+                url=redis_url,
+                username=username,
+                password=password,
+                decode_responses=True,
+                ssl_ca_certs=ssl_ca_certs,
+                socket_timeout=5,
+            )
 
             if self.client.ping():
                 logger.info("Connected to Redis")
-                self.enabled = True
             else:
                 logger.error("Failed to connect to Redis")
 
@@ -33,13 +51,19 @@ class RedisService:
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
 
+    @classmethod
+    def get_client(cls, redis_url=None, ssl_ca_certs=None, username=None, password=None):
+        if cls._instance is None:
+            cls(redis_url, ssl_ca_certs, username, password)
+        return cls._instance.client
+
 class RedisLock:
     def __init__(self, redis_url, lock_name, timeout_secs, **redis_kwargs):
         self.lock_name = lock_name
         self.lock_id = str(uuid.uuid4())
         self.timeout_secs = timeout_secs
         self.lock_obtained = False
-        self.redis = redis.Redis.from_url(redis_url, decode_responses=True, **redis_kwargs)
+        self.redis = RedisService.get_client(redis_url, **redis_kwargs)
 
     def aquire_lock(self):
         # nx=True will only set this key if it _hasn't_ already been set
@@ -63,7 +87,7 @@ class RedisLock:
 class RedisDict:
     def __init__(self, name, redis_url, **redis_kwargs):
         self.name = name
-        self.redis = redis.Redis.from_url(redis_url, decode_responses=True,  **redis_kwargs)
+        self.redis = RedisService.get_client(redis_url, **redis_kwargs)
 
     def __setitem__(self, key, value):
         serialized_value = json.dumps(value)

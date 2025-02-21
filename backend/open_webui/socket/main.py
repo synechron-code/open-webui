@@ -12,9 +12,11 @@ from open_webui.env import (
     ENABLE_WEBSOCKET_SUPPORT,
     WEBSOCKET_MANAGER,
     WEBSOCKET_REDIS_URL,
+    WEBSOCKET_REDIS_CERTS,
+    WEBSOCKET_REDIS_PASSWORD
 )
 from open_webui.utils.auth import decode_token
-from open_webui.socket.utils import RedisDict, RedisLock
+from open_webui.socket.utils import RedisDict, RedisLock, RedisService
 
 from open_webui.env import (
     GLOBAL_LOG_LEVEL,
@@ -54,14 +56,19 @@ TIMEOUT_DURATION = 3
 
 if WEBSOCKET_MANAGER == "redis":
     log.debug("Using Redis to manage websockets.")
-    SESSION_POOL = RedisDict("open-webui:session_pool", redis_url=WEBSOCKET_REDIS_URL)
-    USER_POOL = RedisDict("open-webui:user_pool", redis_url=WEBSOCKET_REDIS_URL)
-    USAGE_POOL = RedisDict("open-webui:usage_pool", redis_url=WEBSOCKET_REDIS_URL)
+
+    TEST = RedisService(redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, password=WEBSOCKET_REDIS_PASSWORD)
+
+    SESSION_POOL = RedisDict("open-webui:session_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, password=WEBSOCKET_REDIS_PASSWORD)
+    USER_POOL = RedisDict("open-webui:user_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, password=WEBSOCKET_REDIS_PASSWORD)
+    USAGE_POOL = RedisDict("open-webui:usage_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, password=WEBSOCKET_REDIS_PASSWORD)
 
     clean_up_lock = RedisLock(
         redis_url=WEBSOCKET_REDIS_URL,
         lock_name="usage_cleanup_lock",
         timeout_secs=TIMEOUT_DURATION * 2,
+        ssl_ca_certs=WEBSOCKET_REDIS_CERTS,
+        password=WEBSOCKET_REDIS_PASSWORD,
     )
     aquire_func = clean_up_lock.aquire_lock
     renew_func = clean_up_lock.renew_lock

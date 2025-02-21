@@ -1725,6 +1725,8 @@ Respond to the user query using the provided context, incorporating inline citat
 - If the answer isn't present in the context but you possess the knowledge, explain this to the user and provide the answer using your own understanding.
 - **Only include inline citations using [source_id] when a <source_id> tag is explicitly provided in the context.**
 - Do not cite if the <source_id> tag is not provided in the context.
+- **Only include inline citations using [source_id] (e.g., [1], [2]) when a `<source_id>` tag is explicitly provided in the context.**
+- Do not cite if the <source_id> tag is not provided in the context.
 - Do not use XML tags in your response.
 - Ensure citations are concise and directly related to the information provided.
 
@@ -1966,7 +1968,7 @@ RAG_WEB_LOADER_ENGINE = PersistentConfig(
 RAG_WEB_SEARCH_TRUST_ENV = PersistentConfig(
     "RAG_WEB_SEARCH_TRUST_ENV",
     "rag.web.search.trust_env",
-    os.getenv("RAG_WEB_SEARCH_TRUST_ENV", False),
+    os.getenv("RAG_WEB_SEARCH_TRUST_ENV", "False").lower() == "true",
 )
 
 PLAYWRIGHT_WS_URI = PersistentConfig(

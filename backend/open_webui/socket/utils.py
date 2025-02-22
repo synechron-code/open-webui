@@ -13,15 +13,8 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
 class RedisService:
-    _instance = None
 
-    def __new__(cls, redis_url, ssl_ca_certs=None, username=None, password=None):
-        if cls._instance is None:
-            cls._instance = super(RedisService, cls).__new__(cls)
-            cls._instance._initialize(redis_url, ssl_ca_certs, username, password)
-        return cls._instance
-
-    def _initialize(self, redis_url, ssl_ca_certs=None, username=None, password=None):
+    def __init__(self, redis_url, ssl_ca_certs=None, username=None, password=None):
         if not password and ENABLE_AZURE_AUTHENTICATION:
             from azure.identity import DefaultAzureCredential
             cred = DefaultAzureCredential()
@@ -73,11 +66,6 @@ class RedisService:
 
         return jwt['oid']
 
-    @classmethod
-    def get_client(cls, redis_url=None, ssl_ca_certs=None, username=None, password=None):
-        if cls._instance is None:
-            cls(redis_url, ssl_ca_certs, username, password)
-        return cls._instance.client
 
 class RedisLock:
     def __init__(self, redis_url, lock_name, timeout_secs, **redis_kwargs):
@@ -85,7 +73,7 @@ class RedisLock:
         self.lock_id = str(uuid.uuid4())
         self.timeout_secs = timeout_secs
         self.lock_obtained = False
-        self.redis = RedisService.get_client(redis_url, **redis_kwargs)
+        self.redis = RedisService(redis_url, **redis_kwargs).client
 
     def aquire_lock(self):
         # nx=True will only set this key if it _hasn't_ already been set
@@ -109,7 +97,7 @@ class RedisLock:
 class RedisDict:
     def __init__(self, name, redis_url, **redis_kwargs):
         self.name = name
-        self.redis = RedisService.get_client(redis_url, **redis_kwargs)
+        self.redis = RedisService(redis_url, **redis_kwargs).client
 
     def __setitem__(self, key, value):
         serialized_value = json.dumps(value)

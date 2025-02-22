@@ -63,18 +63,18 @@ class RedisService:
             )
 
             if self.client.ping():
-                log.info("Connected to Redis")
+                log.debug("Connected to Redis: {redis_url}")
             else:
-                log.error("Failed to connect to Redis")
+                log.error(f"Failed to connect to Redis: {redis_url}")
 
         except ConnectionError as e:
-            log.error(f"Failed to connect to Redis: {e}")
+            log.error(f"Failed to connect to Redis: {redis_url} {e}")
         except TimeoutError as e:
-            log.error(f"Timed out connecting to Redis: {e}")
+            log.error(f"Timed out connecting to Redis: {redis_url} {e}")
         except redis.AuthenticationError as e:
-            log.error(f"Authentication failed connecting to Redis: {e}")
+            log.error(f"Authentication failed connecting to Redis: {redis_url} {e}")
         except Exception as e:
-            log.error(f"Failed to connect to Redis: {e}")
+            log.error(f"Failed to connect to Redis: {redis_url} {e}")
 
     def extract_username_from_token(self, token):
         parts = token.split('.')

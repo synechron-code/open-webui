@@ -63,7 +63,7 @@ class RedisService:
             )
 
             if self.client.ping():
-                log.debug("Connected to Redis: {redis_url}")
+                log.debug(f"Connected to Redis: {redis_url}")
             else:
                 log.error(f"Failed to connect to Redis: {redis_url}")
 

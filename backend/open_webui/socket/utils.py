@@ -1,3 +1,4 @@
+import base64
 import json
 import redis
 import uuid
@@ -22,6 +23,7 @@ class RedisService:
             cred = DefaultAzureCredential()
             token = cred.get_token("https://redis.azure.com/.default")
             password = token.token
+            username = self.extract_username_from_token(password)
 
         try:
             logger.info(f"redis_url: {redis_url}")
@@ -50,6 +52,21 @@ class RedisService:
             logger.error(f"Authentication failed connecting to Redis: {e}")
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
+
+    def extract_username_from_token(token):
+        parts = token.split('.')
+        base64_str = parts[1]
+
+        if len(base64_str) % 4 == 2:
+            base64_str += "=="
+        elif len(base64_str) % 4 == 3:
+            base64_str += "="
+
+        json_bytes = base64.b64decode(base64_str)
+        json_str = json_bytes.decode('utf-8')
+        jwt = json.loads(json_str)
+
+        return jwt['oid']
 
     @classmethod
     def get_client(cls, redis_url=None, ssl_ca_certs=None, username=None, password=None):

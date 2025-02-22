@@ -51,7 +51,7 @@ class RedisService:
         except Exception as e:
             log.error(f"Failed to connect to Redis: {e}")
 
-    def extract_username_from_token(token):
+    def extract_username_from_token(self, token):
         parts = token.split('.')
         base64_str = parts[1]
 

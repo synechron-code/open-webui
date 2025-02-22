@@ -16,6 +16,7 @@ log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 class AzureCredentialService:
     def __init__(self):
         from azure.identity import DefaultAzureCredential
+        log.debug("Using DefaultAzureCredential provider for Redis Cache Authentication")
         self.credential = DefaultAzureCredential()
 
     def get_token(self):

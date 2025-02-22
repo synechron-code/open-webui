@@ -4,9 +4,13 @@ import redis
 import uuid
 import logging
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.propagate=True
+from open_webui.env import (
+    ENABLE_AZURE_AUTHENTICATION,
+    SRC_LOG_LEVELS
+)
+
+log = logging.getLogger(__name__)
+log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
 class RedisService:
     _instance = None
@@ -18,7 +22,7 @@ class RedisService:
         return cls._instance
 
     def _initialize(self, redis_url, ssl_ca_certs=None, username=None, password=None):
-        if not password:
+        if not password and ENABLE_AZURE_AUTHENTICATION:
             from azure.identity import DefaultAzureCredential
             cred = DefaultAzureCredential()
             token = cred.get_token("https://redis.azure.com/.default")
@@ -26,10 +30,11 @@ class RedisService:
             username = self.extract_username_from_token(password)
 
         try:
-            logger.info(f"redis_url: {redis_url}")
-            logger.info(f"redis_username: {username}")
-            logger.info(f"redis_password: {password}")
-            logger.info(f"redis_ssl_ca_certs: {ssl_ca_certs}")
+            masked_password = f"{password[:3]}***{password[-3:]}" if password else None
+            log.debug(f"redis_url: {redis_url}")
+            log.debug(f"redis_username: {username}")
+            log.debug(f"redis_password: {masked_password}")
+            log.debug(f"redis_ssl_ca_certs: {ssl_ca_certs}")
             self.client = redis.Redis.from_url(
                 url=redis_url,
                 username=username,
@@ -40,18 +45,18 @@ class RedisService:
             )
 
             if self.client.ping():
-                logger.info("Connected to Redis")
+                log.info("Connected to Redis")
             else:
-                logger.error("Failed to connect to Redis")
+                log.error("Failed to connect to Redis")
 
         except ConnectionError as e:
-            logger.error(f"Failed to connect to Redis: {e}")
+            log.error(f"Failed to connect to Redis: {e}")
         except TimeoutError as e:
-            logger.error(f"Timed out connecting to Redis: {e}")
+            log.error(f"Timed out connecting to Redis: {e}")
         except redis.AuthenticationError as e:
-            logger.error(f"Authentication failed connecting to Redis: {e}")
+            log.error(f"Authentication failed connecting to Redis: {e}")
         except Exception as e:
-            logger.error(f"Failed to connect to Redis: {e}")
+            log.error(f"Failed to connect to Redis: {e}")
 
     def extract_username_from_token(token):
         parts = token.split('.')

@@ -14,10 +14,11 @@ from open_webui.env import (
     WEBSOCKET_REDIS_URL,
     WEBSOCKET_REDIS_CERTS,
     WEBSOCKET_REDIS_USERNAME,
-    WEBSOCKET_REDIS_PASSWORD
+    WEBSOCKET_REDIS_PASSWORD,
+    WEBSOCKET_REDIS_AZURE_CREDENTIALS
 )
 from open_webui.utils.auth import decode_token
-from open_webui.socket.utils import RedisDict, RedisLock, RedisService
+from open_webui.socket.utils import RedisDict, RedisLock, AzureCredentialService
 
 from open_webui.env import (
     GLOBAL_LOG_LEVEL,
@@ -31,7 +32,17 @@ log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
 
 if WEBSOCKET_MANAGER == "redis":
-    mgr = socketio.AsyncRedisManager(WEBSOCKET_REDIS_URL)
+    password = WEBSOCKET_REDIS_PASSWORD
+    username = WEBSOCKET_REDIS_USERNAME
+    ssl_ca_certs = WEBSOCKET_REDIS_CERTS
+    if not password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
+       azure_credential_service = AzureCredentialService()
+       password = azure_credential_service.get_token()
+       username = azure_credential_service.extract_username_from_token(password)
+    mgr = socketio.AsyncRedisManager(
+        WEBSOCKET_REDIS_URL,
+        redis_options={"username": username,"password": password, "ssl_ca_certs": ssl_ca_certs}
+    )
     sio = socketio.AsyncServer(
         cors_allowed_origins=[],
         async_mode="asgi",
@@ -58,12 +69,27 @@ TIMEOUT_DURATION = 3
 if WEBSOCKET_MANAGER == "redis":
     log.debug("Using Redis to manage websockets.")
 
-    TEST = RedisService(redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, username=WEBSOCKET_REDIS_USERNAME, password=WEBSOCKET_REDIS_PASSWORD)
-
-    SESSION_POOL = RedisDict("open-webui:session_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, username=WEBSOCKET_REDIS_USERNAME, password=WEBSOCKET_REDIS_PASSWORD)
-    USER_POOL = RedisDict("open-webui:user_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, username=WEBSOCKET_REDIS_USERNAME, password=WEBSOCKET_REDIS_PASSWORD)
-    USAGE_POOL = RedisDict("open-webui:usage_pool", redis_url=WEBSOCKET_REDIS_URL, ssl_ca_certs=WEBSOCKET_REDIS_CERTS, username=WEBSOCKET_REDIS_USERNAME, password=WEBSOCKET_REDIS_PASSWORD)
-
+    SESSION_POOL = RedisDict(
+        "open-webui:session_pool",
+        redis_url=WEBSOCKET_REDIS_URL,
+        ssl_ca_certs=WEBSOCKET_REDIS_CERTS,
+        username=WEBSOCKET_REDIS_USERNAME,
+        password=WEBSOCKET_REDIS_PASSWORD
+    )
+    USER_POOL = RedisDict(
+        "open-webui:user_pool",
+        redis_url=WEBSOCKET_REDIS_URL,
+        ssl_ca_certs=WEBSOCKET_REDIS_CERTS,
+        username=WEBSOCKET_REDIS_USERNAME,
+        password=WEBSOCKET_REDIS_PASSWORD
+    )
+    USAGE_POOL = RedisDict(
+        "open-webui:usage_pool",
+        redis_url=WEBSOCKET_REDIS_URL,
+        ssl_ca_certs=WEBSOCKET_REDIS_CERTS,
+        username=WEBSOCKET_REDIS_USERNAME,
+        password=WEBSOCKET_REDIS_PASSWORD
+    )
     clean_up_lock = RedisLock(
         redis_url=WEBSOCKET_REDIS_URL,
         lock_name="usage_cleanup_lock",

@@ -5,22 +5,45 @@ import uuid
 import logging
 
 from open_webui.env import (
-    ENABLE_AZURE_AUTHENTICATION,
+    WEBSOCKET_REDIS_AZURE_CREDENTIALS,
     SRC_LOG_LEVELS
 )
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
+
+class AzureCredentialService:
+    def __init__(self):
+        self.credential = DefaultAzureCredential()
+
+    def get_token(self):
+        token = self.credential.get_token("https://redis.azure.com/.default")
+        return token.token
+
+    def extract_username_from_token(self, token):
+        parts = token.split('.')
+        base64_str = parts[1]
+
+        if len(base64_str) % 4 == 2:
+            base64_str += "=="
+        elif len(base64_str) % 4 == 3:
+            base64_str += "="
+
+        json_bytes = base64.b64decode(base64_str)
+        json_str = json_bytes.decode('utf-8')
+        jwt = json.loads(json_str)
+
+        return jwt['oid']
+
+
 class RedisService:
 
     def __init__(self, redis_url, ssl_ca_certs=None, username=None, password=None):
-        if not password and ENABLE_AZURE_AUTHENTICATION:
-            from azure.identity import DefaultAzureCredential
-            cred = DefaultAzureCredential()
-            token = cred.get_token("https://redis.azure.com/.default")
-            password = token.token
-            username = self.extract_username_from_token(password)
+        if not password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
+            azure_credential_service = AzureCredentialService()
+            password = azure_credential_service.get_token()
+            username = azure_credential_service.extract_username_from_token(password)
 
         try:
             masked_password = f"{password[:3]}***{password[-3:]}" if password else None

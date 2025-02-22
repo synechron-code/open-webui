@@ -431,3 +431,9 @@ if OFFLINE_MODE:
 # DEFAULT_BACKGROUND_IMAGE
 ####################################
 DEFAULT_BACKGROUND_IMAGE = os.environ.get("DEFAULT_BACKGROUND_IMAGE", "")
+
+####################################
+# ENABLE_AZURE_AUTHENTICATION
+####################################
+
+ENABLE_AZURE_AUTHENTICATION = os.environ.get("ENABLE_AZURE_AUTHENTICATION", False)

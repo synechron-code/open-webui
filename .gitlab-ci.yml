@@ -41,7 +41,6 @@ markdownlint:
 
 # TODO add this to a pipeline template
 get_certs:
-  stage: prepare
   image:
     name: ubuntu:latest
     entrypoint: [ "" ]
@@ -69,7 +68,7 @@ get_token:
     - icp
 
 build_image:
-  dependencies:
+  needs:
     - get_certs
   tags:
     - icp

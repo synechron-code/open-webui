@@ -19,7 +19,6 @@ variables:
 
 stages:
   - test
-  - prepare
   - build
   - document
 
@@ -70,5 +69,6 @@ get_token:
 build_image:
   needs:
     - get_certs
+    - get_token
   tags:
     - icp

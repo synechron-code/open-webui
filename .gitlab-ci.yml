@@ -19,6 +19,7 @@ variables:
 
 stages:
   - test
+  - prepare
   - build
   - document
 
@@ -28,8 +29,19 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_TAG
 
+dockerfile_lint:
+  allow_failure: true
+  stage: test
+  image: registry.gitlab.com/pipeline-components/hadolint:latest
+  script:
+    - hadolint "Dockerfile"
+
+markdownlint:
+  allow_failure: true
+
 # TODO add this to a pipeline template
 get_certs:
+  stage: prepare
   image:
     name: ubuntu:latest
     entrypoint: [ "" ]
@@ -51,16 +63,6 @@ get_certs:
       - Microsoft%20RSA%20Root%20Certificate%20Authority%202017.pem
       - DigiCertGlobalRootG2.crt.pem
       - DigiCertGlobalRootCA.pem
-
-dockerfile_lint:
-  allow_failure: true
-  stage: test
-  image: registry.gitlab.com/pipeline-components/hadolint:latest
-  script:
-    - hadolint "Dockerfile"
-
-markdownlint:
-  allow_failure: true
 
 get_token:
   tags:

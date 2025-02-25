@@ -39,18 +39,3 @@ spec:
   owner: group:default/ai-nexus-chat
   system: nexus-chat-v3
   type: openapi
----
-apiVersion: backstage.io/v1alpha1
-kind: System
-metadata:
-  name: nexus-chat-v3
-  title:  Nexus Chat v3
-  description: Synechron's Nexus Chat v3 application (powered by Open WebUI)
-  links:
-  - url: https://nexuschat.synechron.com
-    title: Nexus Chat v3 Production
-  - url: https://nexus-beta.synechron.com
-    title: Nexus Chat v3 UAT
-spec:
-  owner: group:default/ai-nexus-chat
-  domain: nexus

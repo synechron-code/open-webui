@@ -63,14 +63,17 @@ class RedisService:
             log.debug(f"redis_username: {self.username}")
             log.debug(f"redis_password: {masked_password}")
             log.debug(f"redis_ssl_ca_certs: {self.ssl_ca_certs}")
-            self.client = redis.Redis.from_url(
-                url=self.redis_url,
-                username=self.username,
-                password=token,
-                decode_responses=True,
-                ssl_ca_certs=self.ssl_ca_certs,
-                socket_timeout=5,
-            )
+            parameters = {
+                "url": self.redis_url,
+                "decode_responses": True,
+                "socket_timeout": 5,
+            }
+            if self.username and token:
+                parameters["username"] = self.username
+                parameters["password"] = token
+            if self.redis_url.startswith("rediss://"):
+                parameters["ssl_ca_certs"] = self.ssl_ca_certs
+            self.client = redis.Redis.from_url(**parameters)
 
             if self.client.ping():
                 log.info(f"Connected to Redis: {self.redis_url}")

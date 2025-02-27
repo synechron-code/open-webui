@@ -16,7 +16,6 @@ log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 class AzureCredentialService:
     def __init__(self):
         from azure.identity import DefaultAzureCredential
-        log.debug("Using DefaultAzureCredential provider for Redis Cache Authentication")
         self.credential = DefaultAzureCredential()
 
     def get_token(self):
@@ -38,59 +37,73 @@ class AzureCredentialService:
 
         return jwt['oid']
 
-
 class RedisService:
 
     def __init__(self, redis_url, ssl_ca_certs=None, username=None, password=None):
-        if not password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
-            azure_credential_service = AzureCredentialService()
-            password = azure_credential_service.get_token()
-            username = azure_credential_service.extract_username_from_token(password)
+        self.redis_url = redis_url
+        self.ssl_ca_certs = ssl_ca_certs
+        self.username = username
+        self.password = password
+        self.azure_credential_service = None
+        if not self.password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
+            self.azure_credential_service = AzureCredentialService()
+        self.init_redis()
 
+    def init_redis(self):
+        token = None
+        if self.azure_credential_service:
+            log.info("Retrieve Azure Credentials for Redis Cache Authentication")
+            token = self.azure_credential_service.get_token()
+            self.username = self.azure_credential_service.extract_username_from_token(token)
+        else:
+            token = self.password
         try:
-            masked_password = f"{password[:3]}***{password[-3:]}" if password else None
-            log.debug(f"redis_url: {redis_url}")
-            log.debug(f"redis_username: {username}")
+            masked_password = f"{token[:3]}***{token[-3:]}" if token else None
+            log.debug(f"redis_url: {self.redis_url}")
+            log.debug(f"redis_username: {self.username}")
             log.debug(f"redis_password: {masked_password}")
-            log.debug(f"redis_ssl_ca_certs: {ssl_ca_certs}")
+            log.debug(f"redis_ssl_ca_certs: {self.ssl_ca_certs}")
             self.client = redis.Redis.from_url(
-                url=redis_url,
-                username=username,
-                password=password,
+                url=self.redis_url,
+                username=self.username,
+                password=token,
                 decode_responses=True,
-                ssl_ca_certs=ssl_ca_certs,
+                ssl_ca_certs=self.ssl_ca_certs,
                 socket_timeout=5,
             )
 
             if self.client.ping():
-                log.debug(f"Connected to Redis: {redis_url}")
+                log.info(f"Connected to Redis: {self.redis_url}")
             else:
-                log.error(f"Failed to connect to Redis: {redis_url}")
+                log.error(f"Failed to connect to Redis: {self.redis_url}")
 
         except ConnectionError as e:
-            log.error(f"Failed to connect to Redis: {redis_url} {e}")
+            log.error(f"Failed to connect to Redis: {self.redis_url} {e}")
         except TimeoutError as e:
-            log.error(f"Timed out connecting to Redis: {redis_url} {e}")
+            log.error(f"Timed out connecting to Redis: {self.redis_url} {e}")
         except redis.AuthenticationError as e:
-            log.error(f"Authentication failed connecting to Redis: {redis_url} {e}")
+            log.error(f"Authentication failed connecting to Redis: {self.redis_url} {e}")
         except Exception as e:
-            log.error(f"Failed to connect to Redis: {redis_url} {e}")
+            log.error(f"Failed to connect to Redis: {self.redis_url} {e}")
 
-    def extract_username_from_token(self, token):
-        parts = token.split('.')
-        base64_str = parts[1]
+    def get_client(self):
+        return self.client
 
-        if len(base64_str) % 4 == 2:
-            base64_str += "=="
-        elif len(base64_str) % 4 == 3:
-            base64_str += "="
-
-        json_bytes = base64.b64decode(base64_str)
-        json_str = json_bytes.decode('utf-8')
-        jwt = json.loads(json_str)
-
-        return jwt['oid']
-
+# reinitialize the redis connection if an exception occurs
+def reinit_onerror(func):
+    def wrapper(*args, **kwargs):
+        # Get the instance of the class
+        instance = args[0]
+        cls = instance.__class__
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            log.exception(f'{func.__name__} error: {e}')
+            log.info(f"Re-authenticate and initialize Redis Cache connection")
+            cls.redisService.init_redis()
+            cls.redis = cls.redisService.get_client()
+            return func(*args, **kwargs)
+    return wrapper
 
 class RedisLock:
     def __init__(self, redis_url, lock_name, timeout_secs, **redis_kwargs):
@@ -98,8 +111,10 @@ class RedisLock:
         self.lock_id = str(uuid.uuid4())
         self.timeout_secs = timeout_secs
         self.lock_obtained = False
-        self.redis = RedisService(redis_url, **redis_kwargs).client
+        self.redisService = RedisService(redis_url, **redis_kwargs)
+        self.redis = self.redisService.get_client()
 
+    @reinit_onerror
     def aquire_lock(self):
         # nx=True will only set this key if it _hasn't_ already been set
         self.lock_obtained = self.redis.set(
@@ -107,12 +122,14 @@ class RedisLock:
         )
         return self.lock_obtained
 
+    @reinit_onerror
     def renew_lock(self):
         # xx=True will only set this key if it _has_ already been set
         return self.redis.set(
             self.lock_name, self.lock_id, xx=True, ex=self.timeout_secs
         )
 
+    @reinit_onerror
     def release_lock(self):
         lock_value = self.redis.get(self.lock_name)
         if lock_value and lock_value == self.lock_id:
@@ -122,35 +139,44 @@ class RedisLock:
 class RedisDict:
     def __init__(self, name, redis_url, **redis_kwargs):
         self.name = name
-        self.redis = RedisService(redis_url, **redis_kwargs).client
+        self.redisService = RedisService(redis_url, **redis_kwargs)
+        self.redis = self.redisService.get_client()
 
+    @reinit_onerror
     def __setitem__(self, key, value):
         serialized_value = json.dumps(value)
         self.redis.hset(self.name, key, serialized_value)
 
+    @reinit_onerror
     def __getitem__(self, key):
         value = self.redis.hget(self.name, key)
         if value is None:
             raise KeyError(key)
         return json.loads(value)
 
+    @reinit_onerror
     def __delitem__(self, key):
         result = self.redis.hdel(self.name, key)
         if result == 0:
             raise KeyError(key)
 
+    @reinit_onerror
     def __contains__(self, key):
         return self.redis.hexists(self.name, key)
 
+    @reinit_onerror
     def __len__(self):
         return self.redis.hlen(self.name)
 
+    @reinit_onerror
     def keys(self):
         return self.redis.hkeys(self.name)
 
+    @reinit_onerror
     def values(self):
         return [json.loads(v) for v in self.redis.hvals(self.name)]
 
+    @reinit_onerror
     def items(self):
         return [(k, json.loads(v)) for k, v in self.redis.hgetall(self.name).items()]
 
@@ -160,6 +186,7 @@ class RedisDict:
         except KeyError:
             return default
 
+    @reinit_onerror
     def clear(self):
         self.redis.delete(self.name)
 

@@ -30,18 +30,24 @@ logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
+redis_options = {}
 
 if WEBSOCKET_MANAGER == "redis":
     password = WEBSOCKET_REDIS_PASSWORD
     username = WEBSOCKET_REDIS_USERNAME
-    ssl_ca_certs = WEBSOCKET_REDIS_CERTS
     if not password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
        azure_credential_service = AzureCredentialService()
        password = azure_credential_service.get_token()
        username = azure_credential_service.extract_username_from_token(password)
+    if password and username:
+       redis_options["username"] = username
+       redis_options["password"] = password
+    if WEBSOCKET_REDIS_URL.startswith("rediss") and WEBSOCKET_REDIS_CERTS:
+        redis_options["ssl_ca_certs"] = WEBSOCKET_REDIS_CERTS
+
     mgr = socketio.AsyncRedisManager(
         WEBSOCKET_REDIS_URL,
-        redis_options={"username": username,"password": password, "ssl_ca_certs": ssl_ca_certs}
+        redis_options=redis_options
     )
     sio = socketio.AsyncServer(
         cors_allowed_origins=[],

@@ -58,20 +58,20 @@ class RedisService:
         else:
             token = self.password
         try:
-            masked_password = f"{token[:3]}***{token[-3:]}" if token else None
             log.debug(f"redis_url: {self.redis_url}")
-            log.debug(f"redis_username: {self.username}")
-            log.debug(f"redis_password: {masked_password}")
-            log.debug(f"redis_ssl_ca_certs: {self.ssl_ca_certs}")
             parameters = {
                 "url": self.redis_url,
                 "decode_responses": True,
                 "socket_timeout": 5,
             }
             if self.username and token:
+                log.debug(f"redis_username: {self.username}")
+                masked_password = f"{token[:3]}***{token[-3:]}" if token else None
+                log.debug(f"redis_password: {masked_password}")
                 parameters["username"] = self.username
                 parameters["password"] = token
             if self.redis_url.startswith("rediss://"):
+                log.debug(f"redis_ssl_ca_certs: {self.ssl_ca_certs}")
                 parameters["ssl_ca_certs"] = self.ssl_ca_certs
             self.client = redis.Redis.from_url(**parameters)
 
@@ -79,15 +79,20 @@ class RedisService:
                 log.info(f"Connected to Redis: {self.redis_url}")
             else:
                 log.error(f"Failed to connect to Redis: {self.redis_url}")
+                raise e
 
         except ConnectionError as e:
             log.error(f"Failed to connect to Redis: {self.redis_url} {e}")
+            raise e
         except TimeoutError as e:
             log.error(f"Timed out connecting to Redis: {self.redis_url} {e}")
+            raise e
         except redis.AuthenticationError as e:
             log.error(f"Authentication failed connecting to Redis: {self.redis_url} {e}")
+            raise e
         except Exception as e:
             log.error(f"Failed to connect to Redis: {self.redis_url} {e}")
+            raise e
 
     def get_client(self):
         return self.client
@@ -114,8 +119,8 @@ class RedisLock:
         self.lock_id = str(uuid.uuid4())
         self.timeout_secs = timeout_secs
         self.lock_obtained = False
-        self.redisService = RedisService(redis_url, **redis_kwargs)
-        self.redis = self.redisService.get_client()
+        self.redis_service = RedisService(redis_url, **redis_kwargs)
+        self.redis = self.redis_service.get_client()
 
     @reinit_onerror
     def aquire_lock(self):

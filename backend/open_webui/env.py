@@ -459,5 +459,5 @@ DEFAULT_BACKGROUND_IMAGE = os.environ.get("DEFAULT_BACKGROUND_IMAGE", "")
 ####################################
 
 WEBSOCKET_REDIS_AZURE_CREDENTIALS = (
-    os.environ.get("WEBSOCKET_REDIS_AZURE_CREDENTIALS", "True").lower() == "true"
+    os.environ.get("WEBSOCKET_REDIS_AZURE_CREDENTIALS", "false").lower() == "true"
 )

@@ -15,7 +15,6 @@ from open_webui.env import (
     WEBSOCKET_REDIS_CERTS,
     WEBSOCKET_REDIS_USERNAME,
     WEBSOCKET_REDIS_PASSWORD,
-    WEBSOCKET_REDIS_AZURE_CREDENTIALS
 )
 from open_webui.utils.auth import decode_token
 from open_webui.socket.utils import RedisDict, RedisLock, azure_credential_service
@@ -31,22 +30,34 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
 redis_options = {}
-redis_password = WEBSOCKET_REDIS_PASSWORD
-redis_username = WEBSOCKET_REDIS_USERNAME
-if WEBSOCKET_MANAGER == "redis":
-    if not redis_password and azure_credential_service:
-       redis_password = azure_credential_service.get_token()
-       redis_username = azure_credential_service.extract_username_from_token(redis_password)
-    if redis_password and redis_username:
-       redis_options["username"] = redis_username
-       redis_options["password"] = redis_password
+
+# Retrieves and configures the Redis manager for Socket.IO with authentication and SSL if configured
+def get_redis_manager():
+    global redis_options
+    if azure_credential_service:
+        redis_options["password"] = azure_credential_service.get_token()
+        redis_options["username"] = azure_credential_service.get_username(redis_options["password"])
+    elif WEBSOCKET_REDIS_PASSWORD:
+        redis_options["password"] = WEBSOCKET_REDIS_PASSWORD
+        redis_options["username"] = WEBSOCKET_REDIS_USERNAME
     if WEBSOCKET_REDIS_URL.startswith("rediss") and WEBSOCKET_REDIS_CERTS:
         redis_options["ssl_ca_certs"] = WEBSOCKET_REDIS_CERTS
 
-    mgr = socketio.AsyncRedisManager(
-        WEBSOCKET_REDIS_URL,
-        redis_options=redis_options
-    )
+    try:
+        mgr = socketio.AsyncRedisManager(
+            WEBSOCKET_REDIS_URL,
+            redis_options=redis_options
+        )
+        return mgr
+    except ConnectionError as e:
+        log.exception(f"Could not connect to Redis: {e}")
+        raise e
+
+if WEBSOCKET_MANAGER == "redis":
+    mgr = get_redis_manager()
+    if not mgr:
+        log.error("Could not connect to Redis. Exiting.")
+        sys.exit(1)
     sio = socketio.AsyncServer(
         cors_allowed_origins=[],
         async_mode="asgi",
@@ -63,7 +74,6 @@ else:
         allow_upgrades=ENABLE_WEBSOCKET_SUPPORT,
         always_connect=True,
     )
-
 
 # Timeout duration in seconds
 TIMEOUT_DURATION = 3

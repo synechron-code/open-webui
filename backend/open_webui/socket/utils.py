@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import json
 import redis
 import uuid
@@ -12,15 +13,21 @@ from open_webui.env import (
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
-
 class AzureCredentialService:
     def __init__(self):
         from azure.identity import DefaultAzureCredential
         self.credential = DefaultAzureCredential()
 
     def get_token(self):
-        token = self.credential.get_token("https://redis.azure.com/.default")
-        return token.token
+        resource = "https://redis.azure.com/.default"
+        token = self.credential.get_token(resource)
+        if token:
+            expires_on = datetime.fromtimestamp(token.expires_on).strftime('%Y-%m-%d %H:%M:%S')
+            log.info(f"Receive Microsoft Entra token for resource: {resource}, expires on: {expires_on}")
+            return token.token
+        else:
+            log.error(f"Failed to get Microsoft Entra token for resource: {resource}")
+            return None
 
     def extract_username_from_token(self, token):
         parts = token.split('.')
@@ -37,24 +44,26 @@ class AzureCredentialService:
 
         return jwt['oid']
 
+# Initialze global Azure credentials provider if enabled
+global azure_credential_service
+azure_credential_service = None
+if WEBSOCKET_REDIS_AZURE_CREDENTIALS:
+    azure_credential_service = AzureCredentialService()
+
 class RedisService:
 
-    def __init__(self, redis_url, ssl_ca_certs=None, username=None, password=None):
+    def __init__(self, redis_url, redis_options={}):
         self.redis_url = redis_url
-        self.ssl_ca_certs = ssl_ca_certs
-        self.username = username
-        self.password = password
-        self.azure_credential_service = None
-        if not self.password and WEBSOCKET_REDIS_AZURE_CREDENTIALS:
-            self.azure_credential_service = AzureCredentialService()
+        self.ssl_ca_certs = redis_options.get("ssl_ca_certs", None)
+        self.username = redis_options.get("username", None)
+        self.password = redis_options.get("password", None)
         self.init_redis()
 
-    def init_redis(self):
+    def init_redis(self, get_credentials=False):
         token = None
-        if self.azure_credential_service:
-            log.info("Retrieve Azure Credentials for Redis Cache Authentication")
-            token = self.azure_credential_service.get_token()
-            self.username = self.azure_credential_service.extract_username_from_token(token)
+        if get_credentials and azure_credential_service:
+            token = azure_credential_service.get_token()
+            self.username = azure_credential_service.extract_username_from_token(token)
         else:
             token = self.password
         try:
@@ -108,8 +117,8 @@ def reinit_onerror(func):
         except Exception as e:
             log.exception(f'{func.__name__} error: {e}')
             log.info(f"Re-authenticate and initialize Redis Cache connection")
-            cls.redisService.init_redis()
-            cls.redis = cls.redisService.get_client()
+            cls.redis_service.init_redis(True)
+            cls.redis = cls.redis_service.get_client()
             return func(*args, **kwargs)
     return wrapper
 
@@ -147,8 +156,8 @@ class RedisLock:
 class RedisDict:
     def __init__(self, name, redis_url, **redis_kwargs):
         self.name = name
-        self.redisService = RedisService(redis_url, **redis_kwargs)
-        self.redis = self.redisService.get_client()
+        self.redis_service = RedisService(redis_url, **redis_kwargs)
+        self.redis = self.redis_service.get_client()
 
     @reinit_onerror
     def __setitem__(self, key, value):

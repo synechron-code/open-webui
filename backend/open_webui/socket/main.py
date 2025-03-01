@@ -32,6 +32,7 @@ log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 redis_options = {}
 
 # Retrieves and configures the Redis manager for Socket.IO with authentication and SSL if configured
+# If Azure token is used to auth with redis cache and socket lives longer than token expire time, the socket will fail.
 def get_redis_manager():
     global redis_options
     if azure_credential_service:

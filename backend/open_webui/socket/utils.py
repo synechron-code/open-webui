@@ -134,14 +134,13 @@ def reinit_onerror(func):
     def wrapper(*args, **kwargs):
         # Get the instance of the class
         instance = args[0]
-        cls = instance.__class__
         try:
             return func(*args, **kwargs)
         except Exception as e:
             log.exception(f'{func.__name__} error: {e}')
             log.info(f"Re-authenticate and initialize Redis Cache connection")
-            cls.redis_service.init_redis(True)
-            cls.redis = cls.redis_service.get_client()
+            instance.redis_service.init_redis(True)
+            instance.redis = instance.redis_service.get_client()
             return func(*args, **kwargs)
     return wrapper
 

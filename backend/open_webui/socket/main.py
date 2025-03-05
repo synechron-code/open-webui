@@ -53,9 +53,9 @@ def get_redis_manager():
         log.exception(f"Could not connect to Redis: {e}")
         raise e
 
-async def refresh_azure_credentials():
+def refresh_azure_credentials():
     global redis_options
-    if azure_credential_service:
+    if azure_credential_service and azure_credential_service.is_expired():
         redis_options["password"] = azure_credential_service.get_token()
 
 if WEBSOCKET_MANAGER == "redis":
@@ -132,7 +132,7 @@ async def periodic_usage_pool_cleanup():
             
             if WEBSOCKET_MANAGER == "redis":
                 # update redis options to refresh auth token
-                await refresh_azure_credentials()
+                refresh_azure_credentials()
             
             now = int(time.time())
             send_usage = False

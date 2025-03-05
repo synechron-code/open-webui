@@ -137,8 +137,8 @@ def reinit_onerror(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            log.exception(f'{func.__name__} error: {e}')
-            log.info(f"Re-authenticate and initialize Redis Cache connection")
+            log.error(f'{instance.__class__}.{func.__name__}: {e}')
+            log.warning(f"Re-authenticate and initialize Redis Cache connection")
             instance.redis_service.init_redis(True)
             instance.redis = instance.redis_service.get_client()
             return func(*args, **kwargs)

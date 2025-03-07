@@ -16,9 +16,11 @@ from open_webui.env import (
     WEBSOCKET_REDIS_CERTS,
     WEBSOCKET_REDIS_USERNAME,
     WEBSOCKET_REDIS_PASSWORD,
+    WEBSOCKET_REDIS_CREDENTIALS,
 )
 from open_webui.utils.auth import decode_token
-from open_webui.socket.utils import RedisDict, RedisLock, azure_credential_service
+from open_webui.socket.utils import RedisDict, RedisLock
+from open_webui.utils.azure_services import AzureCredentialService
 
 from open_webui.env import (
     GLOBAL_LOG_LEVEL,
@@ -32,17 +34,18 @@ log.setLevel(SRC_LOG_LEVELS["SOCKET"])
 
 redis_options = {}
 
+if WEBSOCKET_REDIS_CREDENTIALS == 'azure':
+    azure_credential_service = AzureCredentialService()
+    redis_options["password"] = azure_credential_service.get_token()
+    redis_options["username"] = azure_credential_service.get_username(redis_options["password"])
+elif not WEBSOCKET_REDIS_PASSWORD:
+    redis_options["password"] = WEBSOCKET_REDIS_PASSWORD
+    redis_options["username"] = WEBSOCKET_REDIS_USERNAME
+if WEBSOCKET_REDIS_URL.startswith("rediss") and WEBSOCKET_REDIS_CERTS:
+    redis_options["ssl_ca_certs"] = WEBSOCKET_REDIS_CERTS
+
 # Retrieves and configures the Redis manager for Socket.IO with authentication and SSL if configured
 def get_redis_manager():
-    global redis_options
-    if azure_credential_service:
-        redis_options["password"] = azure_credential_service.get_token()
-        redis_options["username"] = azure_credential_service.get_username(redis_options["password"])
-    elif WEBSOCKET_REDIS_PASSWORD:
-        redis_options["password"] = WEBSOCKET_REDIS_PASSWORD
-        redis_options["username"] = WEBSOCKET_REDIS_USERNAME
-    if WEBSOCKET_REDIS_URL.startswith("rediss") and WEBSOCKET_REDIS_CERTS:
-        redis_options["ssl_ca_certs"] = WEBSOCKET_REDIS_CERTS
     try:
         mgr = socketio.AsyncRedisManager(
             WEBSOCKET_REDIS_URL,
@@ -54,9 +57,9 @@ def get_redis_manager():
         raise e
 
 def refresh_azure_credentials():
-    global redis_options
-    if azure_credential_service and azure_credential_service.is_expired():
-        redis_options["password"] = azure_credential_service.get_token()
+    if WEBSOCKET_REDIS_CREDENTIALS == 'azure':
+        if azure_credential_service.is_expired():
+            redis_options["password"] = azure_credential_service.get_token()
 
 if WEBSOCKET_MANAGER == "redis":
     mgr = get_redis_manager()

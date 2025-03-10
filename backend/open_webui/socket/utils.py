@@ -18,6 +18,7 @@ class RedisService:
 
     def __init__(self, redis_url, redis_options={}):
         self.redis_url = redis_url
+        self.client = None
         self.ssl_ca_certs = redis_options.get("ssl_ca_certs", None)
         self.username = redis_options.get("username", None)
         self.password = redis_options.get("password", None)
@@ -81,8 +82,7 @@ def reinit_onerror(func):
         except Exception as e:
             log.error(f'{instance.__class__}.{func.__name__}: {e}')
             log.warning(f"Re-authenticate and initialize Redis Cache connection")
-            instance.redis_service.init_redis()
-            instance.redis = instance.redis_service.get_client()
+            instance.init_redis()
             return func(*args, **kwargs)
     return wrapper
 
@@ -92,8 +92,13 @@ class RedisLock:
         self.lock_id = str(uuid.uuid4())
         self.timeout_secs = timeout_secs
         self.lock_obtained = False
-        self.redis_service = RedisService(redis_url, **redis_kwargs)
-        self.redis = self.redis_service.get_client()
+        self.redis_url = redis_url
+        self.redis_kwargs = redis_kwargs
+        self.init_redis()
+
+
+    def init_redis(self):
+        self.redis = RedisService(self.redis_url, **self.redis_kwargs).get_client()
 
     @reinit_onerror
     def aquire_lock(self):

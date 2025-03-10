@@ -37,5 +37,5 @@ spec:
     $text: ./openapi.json
   lifecycle: uat
   owner: group:default/ai-nexus-chat
-  system: nexus-chat-v3
+  system: nexuschatv3
   type: openapi

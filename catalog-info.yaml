@@ -24,7 +24,7 @@ spec:
   providesApis:
   - nexus-chat-v3-api
   system: nexuschatv3
-  type: service
+  type: website
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API

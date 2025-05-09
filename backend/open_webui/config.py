@@ -30,10 +30,6 @@ from open_webui.env import (
     log,
     DEFAULT_BACKGROUND_IMAGE,
     DEFAULT_BACKGROUND_DARK_IMAGE,
-    DEFAULT_LOGO_IMAGE,
-    DEFAULT_LOGO_SMALL_IMAGE,
-    DEFAULT_LOGO_DARK_IMAGE,
-    DEFAULT_LOGO_SMALL_DARK_IMAGE,
 )
 from open_webui.internal.db import Base, get_db
 from open_webui.utils.redis import get_redis_connection
@@ -1001,25 +997,25 @@ ENABLE_BACKGROUND_FADE = PersistentConfig(
 LOGO_IMAGE = PersistentConfig(
     "LOGO_IMAGE",
     "ui.logo_image",
-    str(DEFAULT_LOGO_IMAGE),
+    os.environ.get("DEFAULT_LOGO_IMAGE", ""),
 )
 
 LOGO_SMALL_IMAGE = PersistentConfig(
     "LOGO_SMALL_IMAGE",
     "ui.logo_small_image",
-    str(DEFAULT_LOGO_SMALL_IMAGE),
+    os.environ.get("DEFAULT_LOGO_SMALL_IMAGE", ""),
 )
 
 LOGO_DARK_IMAGE = PersistentConfig(
     "LOGO_DARK_IMAGE",
     "ui.logo_dark_image",
-    str(DEFAULT_LOGO_DARK_IMAGE),
+    os.environ.get("DEFAULT_LOGO_DARK_IMAGE", ""),
 )
 
 LOGO_SMALL_DARK_IMAGE = PersistentConfig(
     "LOGO_SMALL_DARK_IMAGE",
     "ui.logo_small_dark_image",
-    str(DEFAULT_LOGO_SMALL_DARK_IMAGE),
+    os.environ.get("DEFAULT_LOGO_SMALL_DARK_IMAGE", ""),
 )
 
 DEFAULT_MODELS = PersistentConfig(

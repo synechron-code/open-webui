@@ -377,10 +377,6 @@ from open_webui.env import (
     EXTERNAL_PWA_MANIFEST_URL,
     DEFAULT_BACKGROUND_IMAGE,
     DEFAULT_BACKGROUND_DARK_IMAGE,
-    DEFAULT_LOGO_IMAGE,
-    DEFAULT_LOGO_SMALL_IMAGE,
-    DEFAULT_LOGO_DARK_IMAGE,
-    DEFAULT_LOGO_SMALL_DARK_IMAGE,
 )
 
 
@@ -1338,10 +1334,6 @@ async def get_app_config(request: Request):
         "default_locale": str(DEFAULT_LOCALE),
         "default_background_image": str(DEFAULT_BACKGROUND_IMAGE),
         "default_background_dark_image": str(DEFAULT_BACKGROUND_DARK_IMAGE),
-        "default_logo_image": str(DEFAULT_LOGO_IMAGE),
-        "default_logo_dark_image": str(DEFAULT_LOGO_DARK_IMAGE),
-        "default_logo_small_image": str(DEFAULT_LOGO_SMALL_IMAGE),
-        "default_logo_small_dark_image": str(DEFAULT_LOGO_SMALL_DARK_IMAGE),
         "chat_background_image": app.state.config.CHAT_BACKGROUND_IMAGE,
         "chat_background_dark_image": app.state.config.CHAT_BACKGROUND_DARK_IMAGE,
         "enable_background_fade": app.state.config.ENABLE_BACKGROUND_FADE,

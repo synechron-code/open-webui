@@ -40,8 +40,8 @@ markdownlint:
 
 get_token:
   tags:
-    - icp
+    - ai
 
 build_image:
   tags:
-    - icp
+    - ai

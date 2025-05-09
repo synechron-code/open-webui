@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, getContext } from 'svelte';
-	import { WEBUI_NAME, showSidebar, functions, config, user, showArchivedChats } from '$lib/stores';
+	import { WEBUI_NAME, showSidebar, functions, config, user, showArchivedChats, mobile, isDarkMode } from '$lib/stores';
 	import { goto } from '$app/navigation';
 
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
@@ -9,6 +9,8 @@
 	const i18n = getContext('i18n');
 
 	let loaded = false;
+
+    let logoImage: string = "";
 
 	onMount(async () => {
 		if (
@@ -21,8 +23,52 @@
 			goto('/');
 		}
 
+        ///////////////////////////////////////////////
+        // Synechron Customization to detect dark mode
+        ///////////////////////////////////////////////
+        const updateDarkMode = () => {
+            isDarkMode.set(document.documentElement.classList.contains('dark'));
+        };
+
+        // Initial check
+        updateDarkMode();
+
+        // Observe changes to the class attribute
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        // End of Synechron Customization
+
 		loaded = true;
+
+        ///////////////////////////////////////////////
+        // Synechron Customization to detect dark mode
+        ///////////////////////////////////////////////
+        return () => observer.disconnect();
+        // End of Synechron Customization
 	});
+
+
+
+    ///////////////////////////////////////////////
+    // Synechron Customization to detect dark mode
+    ///////////////////////////////////////////////
+    // Reactive statement to update logoImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        mobile.subscribe((value) => {
+            if (darkMode && value) {
+                logoImage = $config.logo_small_dark_image;
+            } else if (darkMode && !value) {
+                logoImage = $config.logo_dark_image;
+            } else if (!darkMode && value) {
+                logoImage = $config.logo_small_image;
+            } else {
+                logoImage = $config.logo_image;
+            }
+        });
+    }
+    // End of Synechron Customization
 </script>
 
 <svelte:head>
@@ -82,10 +128,11 @@
 								>
 									<div class=" self-center">
 										<img
-											src={$user?.profile_image_url}
+											src={logoImage || $user?.profile_image_url}
 											class="size-6 object-cover rounded-full"
 											alt="User profile"
 											draggable="false"
+                                            style="width: {logoImage ? 'auto' : '1.5rem'}; height: {logoImage ?  '2rem' : '1.5rem'};"
 										/>
 									</div>
 								</button>

@@ -290,6 +290,12 @@ from open_webui.config import (
     DEFAULT_MODELS,
     DEFAULT_ARENA_MODEL,
     CHAT_BACKGROUND_IMAGE,
+    CHAT_BACKGROUND_DARK_IMAGE,
+    ENABLE_BACKGROUND_FADE,
+    LOGO_IMAGE,
+    LOGO_SMALL_IMAGE,
+    LOGO_DARK_IMAGE,
+    LOGO_SMALL_DARK_IMAGE,
     MODEL_ORDER_LIST,
     EVALUATION_ARENA_MODELS,
     # WebUI (OAuth)
@@ -370,6 +376,11 @@ from open_webui.env import (
     ENABLE_OTEL,
     EXTERNAL_PWA_MANIFEST_URL,
     DEFAULT_BACKGROUND_IMAGE,
+    DEFAULT_BACKGROUND_DARK_IMAGE,
+    DEFAULT_LOGO_IMAGE,
+    DEFAULT_LOGO_SMALL_IMAGE,
+    DEFAULT_LOGO_DARK_IMAGE,
+    DEFAULT_LOGO_SMALL_DARK_IMAGE,
 )
 
 
@@ -571,6 +582,12 @@ app.state.config.DEFAULT_MODELS = DEFAULT_MODELS
 app.state.config.DEFAULT_PROMPT_SUGGESTIONS = DEFAULT_PROMPT_SUGGESTIONS
 app.state.config.DEFAULT_USER_ROLE = DEFAULT_USER_ROLE
 app.state.config.CHAT_BACKGROUND_IMAGE = CHAT_BACKGROUND_IMAGE
+app.state.config.CHAT_BACKGROUND_DARK_IMAGE = CHAT_BACKGROUND_DARK_IMAGE
+app.state.config.ENABLE_BACKGROUND_FADE = ENABLE_BACKGROUND_FADE
+app.state.config.LOGO_IMAGE = LOGO_IMAGE
+app.state.config.LOGO_SMALL_IMAGE = LOGO_SMALL_IMAGE
+app.state.config.LOGO_DARK_IMAGE = LOGO_DARK_IMAGE
+app.state.config.LOGO_SMALL_DARK_IMAGE = LOGO_SMALL_DARK_IMAGE
 
 
 app.state.config.USER_PERMISSIONS = USER_PERMISSIONS
@@ -1320,7 +1337,18 @@ async def get_app_config(request: Request):
         "version": VERSION,
         "default_locale": str(DEFAULT_LOCALE),
         "default_background_image": str(DEFAULT_BACKGROUND_IMAGE),
+        "default_background_dark_image": str(DEFAULT_BACKGROUND_DARK_IMAGE),
+        "default_logo_image": str(DEFAULT_LOGO_IMAGE),
+        "default_logo_dark_image": str(DEFAULT_LOGO_DARK_IMAGE),
+        "default_logo_small_image": str(DEFAULT_LOGO_SMALL_IMAGE),
+        "default_logo_small_dark_image": str(DEFAULT_LOGO_SMALL_DARK_IMAGE),
         "chat_background_image": app.state.config.CHAT_BACKGROUND_IMAGE,
+        "chat_background_dark_image": app.state.config.CHAT_BACKGROUND_DARK_IMAGE,
+        "enable_background_fade": app.state.config.ENABLE_BACKGROUND_FADE,
+        "logo_image": app.state.config.LOGO_IMAGE,
+        "logo_small_image": app.state.config.LOGO_SMALL_IMAGE,
+        "logo_dark_image": app.state.config.LOGO_DARK_IMAGE,
+        "logo_small_dark_image": app.state.config.LOGO_SMALL_DARK_IMAGE,
         "oauth": {
             "providers": {
                 name: config.get("name", name)

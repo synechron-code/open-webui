@@ -81,6 +81,9 @@ export const currentChatPage = writable(1);
 export const isLastActiveTab = writable(true);
 export const playingNotificationSound = writable(false);
 
+export const defaultImageUrl = writable({});
+export const isDarkMode = writable(false);
+
 export type Model = OpenAIModel | OllamaModel;
 
 type BaseModel = {
@@ -199,6 +202,7 @@ type Config = {
 	default_locale: string;
 	default_background_image: string;
 	chat_background_image: string;
+    enable_background_fade: boolean;
 	default_models: string;
 	default_prompt_suggestions: PromptSuggestion[];
 	features: {

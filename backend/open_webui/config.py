@@ -29,6 +29,11 @@ from open_webui.env import (
     WEBUI_NAME,
     log,
     DEFAULT_BACKGROUND_IMAGE,
+    DEFAULT_BACKGROUND_DARK_IMAGE,
+    DEFAULT_LOGO_IMAGE,
+    DEFAULT_LOGO_SMALL_IMAGE,
+    DEFAULT_LOGO_DARK_IMAGE,
+    DEFAULT_LOGO_SMALL_DARK_IMAGE,
 )
 from open_webui.internal.db import Base, get_db
 from open_webui.utils.redis import get_redis_connection
@@ -113,7 +118,10 @@ DEFAULT_CONFIG = {
     "ui": {
         "default_locale": "",
         "default_background_image": "",
+        "default_background_dark_image": "",
         "chat_background_image": "",
+        "chat_background_dark_image": "",
+        "enablle_background_fade": False,
         "prompt_suggestions": [
             {
                 "title": [
@@ -976,6 +984,42 @@ CHAT_BACKGROUND_IMAGE = PersistentConfig(
     "CHAT_BACKGROUND_IMAGE",
     "ui.chat_background_image",
     str(DEFAULT_BACKGROUND_IMAGE),
+)
+
+CHAT_BACKGROUND_DARK_IMAGE = PersistentConfig(
+    "CHAT_BACKGROUND_DARK_IMAGE",
+    "ui.chat_background_dark_image",
+    str(DEFAULT_BACKGROUND_DARK_IMAGE),
+)
+
+ENABLE_BACKGROUND_FADE = PersistentConfig(
+    "ENABLE_BACKGROUND_FADE",
+    "ui.enable_background_fade",
+    os.environ.get("ENABLE_BACKGROUND_FADE", "True").lower() == "true",
+)
+
+LOGO_IMAGE = PersistentConfig(
+    "LOGO_IMAGE",
+    "ui.logo_image",
+    str(DEFAULT_LOGO_IMAGE),
+)
+
+LOGO_SMALL_IMAGE = PersistentConfig(
+    "LOGO_SMALL_IMAGE",
+    "ui.logo_small_image",
+    str(DEFAULT_LOGO_SMALL_IMAGE),
+)
+
+LOGO_DARK_IMAGE = PersistentConfig(
+    "LOGO_DARK_IMAGE",
+    "ui.logo_dark_image",
+    str(DEFAULT_LOGO_DARK_IMAGE),
+)
+
+LOGO_SMALL_DARK_IMAGE = PersistentConfig(
+    "LOGO_SMALL_DARK_IMAGE",
+    "ui.logo_small_dark_image",
+    str(DEFAULT_LOGO_SMALL_DARK_IMAGE),
 )
 
 DEFAULT_MODELS = PersistentConfig(

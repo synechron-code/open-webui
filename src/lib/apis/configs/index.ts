@@ -346,17 +346,48 @@ export const setDefaultPromptSuggestions = async (token: string, promptSuggestio
 	return res;
 };
 
-export const setDefaultBackgroundImage = async (token: string, defaultBackgroundImage: string) => {
+export const setEnableBackgroundFade = async (token: string, enableBackgroundFade: boolean) => {
 	let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/configs/background`, {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/configs/background_fade`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			Authorization: `Bearer ${token}`
 		},
 		body: JSON.stringify({
-			background: defaultBackgroundImage
+			ENABLE_BACKGROUND_FADE: enableBackgroundFade
+		})
+	})
+		.then(async (res) => {
+			if (!res.ok) throw await res.json();
+			return res.json();
+		})
+		.catch((err) => {
+			console.log(err);
+			error = err.detail;
+			return null;
+		});
+
+	if (error) {
+		throw error;
+	}
+
+	return res;
+};
+
+
+export const setDefaultImageUrl = async (token: string, defaultImages: object) => {
+	let error = null;
+
+	const res = await fetch(`${WEBUI_API_BASE_URL}/configs/image`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({
+			...defaultImages
 		})
 	})
 		.then(async (res) => {

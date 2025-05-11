@@ -2,11 +2,11 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import { toast } from 'svelte-sonner';
 
-	import { getBackendConfig, getTaskConfig, updateTaskConfig } from '$lib/apis';
+	import { getBackendConfig, getModels, getTaskConfig, updateTaskConfig } from '$lib/apis';
 	import { setDefaultPromptSuggestions } from '$lib/apis/configs';
 	import { setEnableBackgroundFade } from '$lib/apis/configs';
 	import { setDefaultImageUrl } from '$lib/apis/configs';
-	import { config, models, settings, user } from '$lib/stores';
+	import { config, settings, user } from '$lib/stores';
 	import { createEventDispatcher, onMount, getContext } from 'svelte';
 
     import { defaultImageUrl } from '$lib/stores';
@@ -18,6 +18,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Textarea from '$lib/components/common/Textarea.svelte';
+	import Spinner from '$lib/components/common/Spinner.svelte';
+	import { getBaseModels } from '$lib/apis/models';
 
 	const dispatch = createEventDispatcher();
 
@@ -60,6 +62,7 @@
 	};
 
 	onMount(async () => {
+		await init();
 		taskConfig = await getTaskConfig(localStorage.token);
 
 		promptSuggestions = $config?.default_prompt_suggestions ?? [];
@@ -107,9 +110,40 @@
         };
         filesInputElement.click();
     };
+
+	let workspaceModels = null;
+	let baseModels = null;
+
+	let models = null;
+
+	const init = async () => {
+		workspaceModels = await getBaseModels(localStorage.token);
+		baseModels = await getModels(localStorage.token, null, true);
+
+		models = baseModels.map((m) => {
+			const workspaceModel = workspaceModels.find((wm) => wm.id === m.id);
+
+			if (workspaceModel) {
+				return {
+					...m,
+					...workspaceModel
+				};
+			} else {
+				return {
+					...m,
+					id: m.id,
+					name: m.name,
+
+					is_active: true
+				};
+			}
+		});
+
+		console.log('models', models);
+	};
 </script>
 
-{#if taskConfig}
+{#if models !== null && taskConfig}
 	<form
 		class="flex flex-col h-full justify-between space-y-3 text-sm"
 		on:submit|preventDefault={() => {
@@ -161,9 +195,27 @@
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL}
 							placeholder={$i18n.t('Select a model')}
+							on:change={() => {
+								if (taskConfig.TASK_MODEL) {
+									const model = models.find((m) => m.id === taskConfig.TASK_MODEL);
+									if (model) {
+										if (model?.access_control !== null) {
+											toast.error(
+												$i18n.t(
+													'This model is not publicly available. Please select another model.'
+												)
+											);
+										}
+
+										taskConfig.TASK_MODEL = model.id;
+									} else {
+										taskConfig.TASK_MODEL = '';
+									}
+								}
+							}}
 						>
 							<option value="" selected>{$i18n.t('Current Model')}</option>
-							{#each $models.filter((m) => m.owned_by === 'ollama') as model}
+							{#each models.filter((m) => m.owned_by === 'ollama') as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
 								</option>
@@ -177,9 +229,27 @@
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL_EXTERNAL}
 							placeholder={$i18n.t('Select a model')}
+							on:change={() => {
+								if (taskConfig.TASK_MODEL_EXTERNAL) {
+									const model = models.find((m) => m.id === taskConfig.TASK_MODEL_EXTERNAL);
+									if (model) {
+										if (model?.access_control !== null) {
+											toast.error(
+												$i18n.t(
+													'This model is not publicly available. Please select another model.'
+												)
+											);
+										}
+
+										taskConfig.TASK_MODEL_EXTERNAL = model.id;
+									} else {
+										taskConfig.TASK_MODEL_EXTERNAL = '';
+									}
+								}
+							}}
 						>
 							<option value="" selected>{$i18n.t('Current Model')}</option>
-							{#each $models as model}
+							{#each models as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
 								</option>
@@ -709,4 +779,8 @@
 			</button>
 		</div>
 	</form>
+{:else}
+	<div class=" h-full w-full flex justify-center items-center">
+		<Spinner />
+	</div>
 {/if}

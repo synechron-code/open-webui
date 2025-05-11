@@ -571,6 +571,12 @@ OAUTH_ALLOWED_DOMAINS = PersistentConfig(
     ],
 )
 
+OAUTH_UPDATE_PICTURE_ON_LOGIN = PersistentConfig(
+    "OAUTH_UPDATE_PICTURE_ON_LOGIN",
+    "oauth.update_picture_on_login",
+    os.environ.get("OAUTH_UPDATE_PICTURE_ON_LOGIN", "False").lower() == "true",
+)
+
 
 def load_oauth_providers():
     OAUTH_PROVIDERS.clear()
@@ -780,9 +786,10 @@ S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME", None)
 S3_KEY_PREFIX = os.environ.get("S3_KEY_PREFIX", None)
 S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL", None)
 S3_USE_ACCELERATE_ENDPOINT = (
-    os.environ.get("S3_USE_ACCELERATE_ENDPOINT", "False").lower() == "true"
+    os.environ.get("S3_USE_ACCELERATE_ENDPOINT", "false").lower() == "true"
 )
 S3_ADDRESSING_STYLE = os.environ.get("S3_ADDRESSING_STYLE", None)
+S3_ENABLE_TAGGING = os.getenv("S3_ENABLE_TAGGING", "false").lower() == "true"
 
 GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", None)
 GOOGLE_APPLICATION_CREDENTIALS_JSON = os.environ.get(
@@ -1316,7 +1323,16 @@ ENABLE_USER_WEBHOOKS = PersistentConfig(
 )
 
 # FastAPI / AnyIO settings
-THREAD_POOL_SIZE = int(os.getenv("THREAD_POOL_SIZE", "0"))
+THREAD_POOL_SIZE = os.getenv("THREAD_POOL_SIZE", None)
+
+if THREAD_POOL_SIZE is not None and isinstance(THREAD_POOL_SIZE, str):
+    try:
+        THREAD_POOL_SIZE = int(THREAD_POOL_SIZE)
+    except ValueError:
+        log.warning(
+            f"THREAD_POOL_SIZE is not a valid integer: {THREAD_POOL_SIZE}. Defaulting to None."
+        )
+        THREAD_POOL_SIZE = None
 
 
 def validate_cors_origins(origins):
@@ -1418,6 +1434,9 @@ Generate a concise, 3-5 word title with an emoji summarizing the chat history.
 - Use emojis that enhance understanding of the topic, but avoid quotation marks or special formatting.
 - Write the title in the chat's primary language; default to English if multilingual.
 - Prioritize accuracy over excessive creativity; keep it clear and simple.
+- Your entire response must consist solely of the JSON object, without any introductory or concluding text.
+- The output must be a single, raw JSON object, without any markdown code fences or other encapsulating text.
+- Ensure no conversational text, affirmations, or explanations precede or follow the raw JSON output, as this will cause direct parsing failure.
 ### Output:
 JSON format: { "title": "your concise title here" }
 ### Examples:
@@ -1807,6 +1826,12 @@ MILVUS_URI = os.environ.get("MILVUS_URI", f"{DATA_DIR}/vector_db/milvus.db")
 MILVUS_DB = os.environ.get("MILVUS_DB", "default")
 MILVUS_TOKEN = os.environ.get("MILVUS_TOKEN", None)
 
+MILVUS_INDEX_TYPE = os.environ.get("MILVUS_INDEX_TYPE", "HNSW")
+MILVUS_METRIC_TYPE = os.environ.get("MILVUS_METRIC_TYPE", "COSINE")
+MILVUS_HNSW_M = int(os.environ.get("MILVUS_HNSW_M", "16"))
+MILVUS_HNSW_EFCONSTRUCTION = int(os.environ.get("MILVUS_HNSW_EFCONSTRUCTION", "100"))
+MILVUS_IVF_FLAT_NLIST = int(os.environ.get("MILVUS_IVF_FLAT_NLIST", "128"))
+
 # Qdrant
 QDRANT_URI = os.environ.get("QDRANT_URI", None)
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", None)
@@ -1894,6 +1919,11 @@ ONEDRIVE_SHAREPOINT_URL = PersistentConfig(
     os.environ.get("ONEDRIVE_SHAREPOINT_URL", ""),
 )
 
+ONEDRIVE_SHAREPOINT_TENANT_ID = PersistentConfig(
+    "ONEDRIVE_SHAREPOINT_TENANT_ID",
+    "onedrive.sharepoint_tenant_id",
+    os.environ.get("ONEDRIVE_SHAREPOINT_TENANT_ID", ""),
+)
 
 # RAG Content Extraction
 CONTENT_EXTRACTION_ENGINE = PersistentConfig(
@@ -2042,6 +2072,12 @@ RAG_EMBEDDING_PREFIX_FIELD_NAME = os.environ.get(
     "RAG_EMBEDDING_PREFIX_FIELD_NAME", None
 )
 
+RAG_RERANKING_ENGINE = PersistentConfig(
+    "RAG_RERANKING_ENGINE",
+    "rag.reranking_engine",
+    os.environ.get("RAG_RERANKING_ENGINE", ""),
+)
+
 RAG_RERANKING_MODEL = PersistentConfig(
     "RAG_RERANKING_MODEL",
     "rag.reranking_model",
@@ -2050,6 +2086,7 @@ RAG_RERANKING_MODEL = PersistentConfig(
 if RAG_RERANKING_MODEL.value != "":
     log.info(f"Reranking model set: {RAG_RERANKING_MODEL.value}")
 
+
 RAG_RERANKING_MODEL_AUTO_UPDATE = (
     not OFFLINE_MODE
     and os.environ.get("RAG_RERANKING_MODEL_AUTO_UPDATE", "True").lower() == "true"
@@ -2057,6 +2094,18 @@ RAG_RERANKING_MODEL_AUTO_UPDATE = (
 
 RAG_RERANKING_MODEL_TRUST_REMOTE_CODE = (
     os.environ.get("RAG_RERANKING_MODEL_TRUST_REMOTE_CODE", "True").lower() == "true"
+)
+
+RAG_EXTERNAL_RERANKER_URL = PersistentConfig(
+    "RAG_EXTERNAL_RERANKER_URL",
+    "rag.external_reranker_url",
+    os.environ.get("RAG_EXTERNAL_RERANKER_URL", ""),
+)
+
+RAG_EXTERNAL_RERANKER_API_KEY = PersistentConfig(
+    "RAG_EXTERNAL_RERANKER_API_KEY",
+    "rag.external_reranker_api_key",
+    os.environ.get("RAG_EXTERNAL_RERANKER_API_KEY", ""),
 )
 
 

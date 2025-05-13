@@ -67,8 +67,8 @@
 
 	let webSearch = null;
 
-	let iframeSandboxAllowSameOrigin = false;
-	let iframeSandboxAllowForms = false;
+	let iframeSandboxAllowSameOrigin = true;
+	let iframeSandboxAllowForms = true;
 
 	const toggleExpandDetails = () => {
 		expandDetails = !expandDetails;
@@ -310,8 +310,8 @@
 		notificationSound = $settings?.notificationSound ?? true;
 		notificationSoundAlways = $settings?.notificationSoundAlways ?? false;
 
-		iframeSandboxAllowSameOrigin = $settings?.iframeSandboxAllowSameOrigin ?? false;
-		iframeSandboxAllowForms = $settings?.iframeSandboxAllowForms ?? false;
+		iframeSandboxAllowSameOrigin = $settings?.iframeSandboxAllowSameOrigin ?? true;
+		iframeSandboxAllowForms = $settings?.iframeSandboxAllowForms ?? true;
 
 		stylizedPdfExport = $settings?.stylizedPdfExport ?? true;
 

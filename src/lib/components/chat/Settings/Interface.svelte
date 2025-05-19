@@ -59,9 +59,6 @@
 	// chat export
 	let stylizedPdfExport = true;
 
-	// chat export
-	let stylizedPdfExport = true;
-
 	// Admin - Show Update Available Toast
 	let showUpdateToast = true;
 	let showChangelog = true;

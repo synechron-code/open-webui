@@ -300,13 +300,15 @@ from open_webui.config import (
     DEFAULT_PROMPT_SUGGESTIONS,
     DEFAULT_MODELS,
     DEFAULT_ARENA_MODEL,
+    # START Synechron Customization
     CHAT_BACKGROUND_IMAGE,
     CHAT_BACKGROUND_DARK_IMAGE,
-    ENABLE_BACKGROUND_FADE,
     LOGO_IMAGE,
     LOGO_SMALL_IMAGE,
     LOGO_DARK_IMAGE,
     LOGO_SMALL_DARK_IMAGE,
+    ENABLE_BACKGROUND_FADE,
+    # END Synechron Customization
     MODEL_ORDER_LIST,
     EVALUATION_ARENA_MODELS,
     # WebUI (OAuth)
@@ -389,6 +391,14 @@ from open_webui.env import (
     ENABLE_OTEL,
     EXTERNAL_PWA_MANIFEST_URL,
     AIOHTTP_CLIENT_SESSION_SSL,
+    # START Synechron Customization
+    DEFAULT_BACKGROUND_IMAGE,
+    DEFAULT_BACKGROUND_DARK_IMAGE,
+    DEFAULT_LOGO_IMAGE,
+    DEFAULT_LOGO_SMALL_IMAGE,
+    DEFAULT_LOGO_DARK_IMAGE,
+    DEFAULT_LOGO_SMALL_DARK_IMAGE,
+    # END Synechron Customization
 )
 
 
@@ -935,6 +945,18 @@ app.state.config.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH = (
     AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH
 )
 
+########################################
+#
+# LOGO - Synechron Customization
+#
+########################################
+app.state.config.CHAT_BACKGROUND_IMAGE = CHAT_BACKGROUND_IMAGE
+app.state.config.CHAT_BACKGROUND_DARK_IMAGE = CHAT_BACKGROUND_DARK_IMAGE
+app.state.config.LOGO_IMAGE = LOGO_IMAGE
+app.state.config.LOGO_SMALL_IMAGE = LOGO_SMALL_IMAGE
+app.state.config.LOGO_DARK_IMAGE = LOGO_DARK_IMAGE
+app.state.config.LOGO_SMALL_DARK_IMAGE = LOGO_SMALL_DARK_IMAGE
+app.state.config.ENABLE_BACKGROUND_FADE = ENABLE_BACKGROUND_FADE
 
 ########################################
 #

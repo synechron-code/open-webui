@@ -115,67 +115,7 @@ if os.path.exists(f"{DATA_DIR}/config.json"):
 
 DEFAULT_CONFIG = {
     "version": 0,
-    "ui": {
-        "default_locale": "",
-        "default_background_image": "",
-        "default_background_dark_image": "",
-        "chat_background_image": "",
-        "chat_background_dark_image": "",
-        "enable_background_fade": False,
-        "default_logo_image": "",
-        "default_logo_small_image": "",
-        "default_logo_dark_image": "",
-        "default_logo_small_dark_image": "",
-        "logo_image": "",
-        "logo_small_image": "",
-        "logo_dark_image": "",
-        "logo_small_dark_image": "",
-        "prompt_suggestions": [
-            {
-                "title": [
-                    "Help me study",
-                    "vocabulary for a college entrance exam",
-                ],
-                "content": "Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
-            },
-            {
-                "title": [
-                    "Give me ideas",
-                    "for what to do with my kids' art",
-                ],
-                "content": "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
-            },
-            {
-                "title": ["Tell me a fun fact", "about the Roman Empire"],
-                "content": "Tell me a random fun fact about the Roman Empire",
-            },
-            {
-                "title": [
-                    "Show me a code snippet",
-                    "of a website's sticky header",
-                ],
-                "content": "Show me a code snippet of a website's sticky header in CSS and JavaScript.",
-            },
-            {
-                "title": [
-                    "Explain options trading",
-                    "if I'm familiar with buying and selling stocks",
-                ],
-                "content": "Explain options trading in simple terms if I'm familiar with buying and selling stocks.",
-            },
-            {
-                "title": ["Overcome procrastination", "give me tips"],
-                "content": "Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?",
-            },
-            {
-                "title": [
-                    "Grammar check",
-                    "rewrite it for better readability ",
-                ],
-                "content": 'Check the following sentence for grammar and clarity: "[sentence]". Rewrite it for better readability while maintaining its original meaning.',
-            },
-        ],
-    },
+    "ui": {},
 }
 
 
@@ -1097,6 +1037,26 @@ DEFAULT_USER_ROLE = PersistentConfig(
     os.getenv("DEFAULT_USER_ROLE", "pending"),
 )
 
+PENDING_USER_OVERLAY_TITLE = PersistentConfig(
+    "PENDING_USER_OVERLAY_TITLE",
+    "ui.pending_user_overlay_title",
+    os.environ.get("PENDING_USER_OVERLAY_TITLE", ""),
+)
+
+PENDING_USER_OVERLAY_CONTENT = PersistentConfig(
+    "PENDING_USER_OVERLAY_CONTENT",
+    "ui.pending_user_overlay_content",
+    os.environ.get("PENDING_USER_OVERLAY_CONTENT", ""),
+)
+
+
+RESPONSE_WATERMARK = PersistentConfig(
+    "RESPONSE_WATERMARK",
+    "ui.watermark",
+    os.environ.get("RESPONSE_WATERMARK", ""),
+)
+
+
 USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS = (
     os.environ.get("USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS", "False").lower()
     == "true"
@@ -1779,10 +1739,11 @@ DEFAULT_CODE_INTERPRETER_PROMPT = """
 1. **Code Interpreter**: `<code_interpreter type="code" lang="python"></code_interpreter>`
    - You have access to a Python shell that runs directly in the user's browser, enabling fast execution of code for analysis, calculations, or problem-solving.  Use it in this response.
    - The Python code you write can incorporate a wide array of libraries, handle data manipulation or visualization, perform API calls for web-related tasks, or tackle virtually any computational challenge. Use this flexibility to **think outside the box, craft elegant solutions, and harness Python's full potential**.
-   - To use it, **you must enclose your code within `<code_interpreter type="code" lang="python">` XML tags** and stop right away. If you don't, the code won't execute. Do NOT use triple backticks.
-   - When coding, **always aim to print meaningful outputs** (e.g., results, tables, summaries, or visuals) to better interpret and verify the findings. Avoid relying on implicit outputs; prioritize explicit and clear print statements so the results are effectively communicated to the user.
-   - After obtaining the printed output, **always provide a concise analysis, interpretation, or next steps to help the user understand the findings or refine the outcome further.**
-   - If the results are unclear, unexpected, or require validation, refine the code and execute it again as needed. Always aim to deliver meaningful insights from the results, iterating if necessary.
+   - To use it, **you must enclose your code within `<code_interpreter type="code" lang="python">` XML tags** and stop right away. If you don't, the code won't execute. 
+   - When writing code in the code_interpreter XML tag, Do NOT use the triple backticks code block for markdown formatting, example: ```py # python code ``` will cause an error because it is markdown formatting, it is not python code.
+   - When coding, **always aim to print meaningful outputs** (e.g., results, tables, summaries, or visuals) to better interpret and verify the findings. Avoid relying on implicit outputs; prioritize explicit and clear print statements so the results are effectively communicated to the user.  
+   - After obtaining the printed output, **always provide a concise analysis, interpretation, or next steps to help the user understand the findings or refine the outcome further.**  
+   - If the results are unclear, unexpected, or require validation, refine the code and execute it again as needed. Always aim to deliver meaningful insights from the results, iterating if necessary.  
    - **If a link to an image, audio, or any file is provided in markdown format in the output, ALWAYS regurgitate word for word, explicitly display it as part of the response to ensure the user can access it easily, do NOT change the link.**
    - All responses should be communicated in the chat's primary language, ensuring seamless understanding. If the chat is multilingual, default to English for clarity.
 
@@ -1838,6 +1799,9 @@ QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", None)
 QDRANT_ON_DISK = os.environ.get("QDRANT_ON_DISK", "false").lower() == "true"
 QDRANT_PREFER_GRPC = os.environ.get("QDRANT_PREFER_GRPC", "False").lower() == "true"
 QDRANT_GRPC_PORT = int(os.environ.get("QDRANT_GRPC_PORT", "6334"))
+ENABLE_QDRANT_MULTITENANCY_MODE = (
+    os.environ.get("ENABLE_QDRANT_MULTITENANCY_MODE", "false").lower() == "true"
+)
 
 # OpenSearch
 OPENSEARCH_URI = os.environ.get("OPENSEARCH_URI", "https://localhost:9200")
@@ -1932,6 +1896,18 @@ CONTENT_EXTRACTION_ENGINE = PersistentConfig(
     os.environ.get("CONTENT_EXTRACTION_ENGINE", "").lower(),
 )
 
+EXTERNAL_DOCUMENT_LOADER_URL = PersistentConfig(
+    "EXTERNAL_DOCUMENT_LOADER_URL",
+    "rag.external_document_loader_url",
+    os.environ.get("EXTERNAL_DOCUMENT_LOADER_URL", ""),
+)
+
+EXTERNAL_DOCUMENT_LOADER_API_KEY = PersistentConfig(
+    "EXTERNAL_DOCUMENT_LOADER_API_KEY",
+    "rag.external_document_loader_api_key",
+    os.environ.get("EXTERNAL_DOCUMENT_LOADER_API_KEY", ""),
+)
+
 TIKA_SERVER_URL = PersistentConfig(
     "TIKA_SERVER_URL",
     "rag.tika_server_url",
@@ -1954,6 +1930,12 @@ DOCLING_OCR_LANG = PersistentConfig(
     "DOCLING_OCR_LANG",
     "rag.docling_ocr_lang",
     os.getenv("DOCLING_OCR_LANG", "eng,fra,deu,spa"),
+)
+
+DOCLING_DO_PICTURE_DESCRIPTION = PersistentConfig(
+    "DOCLING_DO_PICTURE_DESCRIPTION",
+    "rag.docling_do_picture_description",
+    os.getenv("DOCLING_DO_PICTURE_DESCRIPTION", "False").lower() == "true",
 )
 
 DOCUMENT_INTELLIGENCE_ENDPOINT = PersistentConfig(
@@ -2025,6 +2007,16 @@ RAG_FILE_MAX_SIZE = PersistentConfig(
         if os.environ.get("RAG_FILE_MAX_SIZE")
         else None
     ),
+)
+
+RAG_ALLOWED_FILE_EXTENSIONS = PersistentConfig(
+    "RAG_ALLOWED_FILE_EXTENSIONS",
+    "rag.file.allowed_extensions",
+    [
+        ext.strip()
+        for ext in os.environ.get("RAG_ALLOWED_FILE_EXTENSIONS", "").split(",")
+        if ext.strip()
+    ],
 )
 
 RAG_EMBEDDING_ENGINE = PersistentConfig(
@@ -2947,6 +2939,12 @@ LDAP_CA_CERT_FILE = PersistentConfig(
     "LDAP_CA_CERT_FILE",
     "ldap.server.ca_cert_file",
     os.environ.get("LDAP_CA_CERT_FILE", ""),
+)
+
+LDAP_VALIDATE_CERT = PersistentConfig(
+    "LDAP_VALIDATE_CERT",
+    "ldap.server.validate_cert",
+    os.environ.get("LDAP_VALIDATE_CERT", "True").lower() == "true",
 )
 
 LDAP_CIPHERS = PersistentConfig(

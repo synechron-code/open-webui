@@ -191,6 +191,16 @@ async def connect(sid, environ, auth):
                 USER_POOL[user.id] = [sid]
 
             # print(f"user {user.name}({user.id}) connected with session ID {sid}")
+            extra_info={
+                'event_type': 'connect',
+                'user_name': user.name,
+                'user_id': user.id,
+                'session_id': sid
+            }
+            log.info(
+                "User Event",
+                extra = {"extra": extra_info}
+            )
             await sio.emit("user-list", {"user_ids": list(USER_POOL.keys())})
             await sio.emit("usage", {"models": get_models_in_use()})
 
@@ -223,6 +233,16 @@ async def user_join(sid, data):
         await sio.enter_room(sid, f"channel:{channel.id}")
 
     # print(f"user {user.name}({user.id}) connected with session ID {sid}")
+    extra_info={
+        'event_type': 'user-join',
+        'user_name': user.name,
+        'user_id': user.id,
+        'session_id': sid
+    }
+    log.info(
+        "User Event",
+        extra = {"extra": extra_info}
+    )
 
     await sio.emit("user-list", {"user_ids": list(USER_POOL.keys())})
     return {"id": user.id, "name": user.name}
@@ -295,6 +315,16 @@ async def disconnect(sid):
         if len(USER_POOL[user_id]) == 0:
             del USER_POOL[user_id]
 
+        extra_info={
+            'event_type': 'connect',
+            'user_name': user.name,
+            'user_id': user.id,
+            'session_id': sid
+        }
+        log.info(
+            "User Event",
+            extra = {"extra": extra_info}
+        )
         await sio.emit("user-list", {"user_ids": list(USER_POOL.keys())})
     else:
         pass

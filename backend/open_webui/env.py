@@ -70,6 +70,8 @@ if GLOBAL_LOG_LEVEL in logging.getLevelNamesMapping():
     logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL, force=True)
 else:
     GLOBAL_LOG_LEVEL = "INFO"
+    
+ENABLE_JSON_LOGGING = os.environ.get("ENABLE_JSON_LOGGING", "False").lower() == "true"
 
 log = logging.getLogger(__name__)
 log.info(f"GLOBAL_LOG_LEVEL: {GLOBAL_LOG_LEVEL}")

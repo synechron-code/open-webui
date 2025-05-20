@@ -398,6 +398,7 @@ from open_webui.env import (
     DEFAULT_LOGO_SMALL_IMAGE,
     DEFAULT_LOGO_DARK_IMAGE,
     DEFAULT_LOGO_SMALL_DARK_IMAGE,
+    ENABLE_JSON_LOGGING,
     # END Synechron Customization
 )
 

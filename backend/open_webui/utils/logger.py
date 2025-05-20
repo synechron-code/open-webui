@@ -10,6 +10,7 @@ from open_webui.env import (
     AUDIT_LOG_LEVEL,
     AUDIT_LOGS_FILE_PATH,
     GLOBAL_LOG_LEVEL,
+    ENABLE_JSON_LOGGING,
 )
 
 
@@ -57,9 +58,13 @@ class InterceptHandler(logging.Handler):
         while frame and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
+        
+        extra = {}
+        if hasattr(record, 'extra'):
+            extra = record.extra
 
         logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
+            level, record.getMessage(), **extra
         )
 
 
@@ -110,6 +115,7 @@ def start_logger():
         level=GLOBAL_LOG_LEVEL,
         format=stdout_format,
         filter=lambda record: "auditable" not in record["extra"],
+        serialize=ENABLE_JSON_LOGGING,
     )
 
     if AUDIT_LOG_LEVEL != "NONE":

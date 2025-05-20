@@ -317,8 +317,8 @@ async def disconnect(sid):
 
         extra_info={
             'event_type': 'connect',
-            'user_name': user.name,
-            'user_id': user.id,
+            'user_name': user['name'],
+            'user_id': user['id'],
             'session_id': sid
         }
         log.info(

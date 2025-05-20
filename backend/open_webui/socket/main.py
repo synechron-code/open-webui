@@ -192,13 +192,16 @@ async def connect(sid, environ, auth):
 
             # print(f"user {user.name}({user.id}) connected with session ID {sid}")
             extra_info={
+                'timestamp': time.time(),
                 'event_type': 'connect',
                 'user_name': user.name,
                 'user_id': user.id,
-                'session_id': sid
+                'email': user.email,
+                'role': user.role,
+                'session_id': sid,
             }
             log.info(
-                "User Event",
+                "Socket Event",
                 extra = {"extra": extra_info}
             )
             await sio.emit("user-list", {"user_ids": list(USER_POOL.keys())})
@@ -234,13 +237,16 @@ async def user_join(sid, data):
 
     # print(f"user {user.name}({user.id}) connected with session ID {sid}")
     extra_info={
+        'timestamp': time.time(),
         'event_type': 'user-join',
         'user_name': user.name,
         'user_id': user.id,
-        'session_id': sid
+        'email': user.email,
+        'role': user.role,
+        'session_id': sid,
     }
     log.info(
-        "User Event",
+        "Socket Event",
         extra = {"extra": extra_info}
     )
 
@@ -316,13 +322,16 @@ async def disconnect(sid):
             del USER_POOL[user_id]
 
         extra_info={
-            'event_type': 'connect',
+            'timestamp': time.time(),
+            'event_type': 'disconnect',
             'user_name': user['name'],
             'user_id': user['id'],
-            'session_id': sid
+            'email': user['email'],
+            'role': user['role'],
+            'session_id': sid,
         }
         log.info(
-            "User Event",
+            "Socket Event",
             extra = {"extra": extra_info}
         )
         await sio.emit("user-list", {"user_ids": list(USER_POOL.keys())})

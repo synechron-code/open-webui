@@ -346,6 +346,7 @@ export const setDefaultPromptSuggestions = async (token: string, promptSuggestio
 	return res;
 };
 
+// START Synechron Customization
 export const setEnableBackgroundFade = async (token: string, enableBackgroundFade: boolean) => {
 	let error = null;
 
@@ -406,6 +407,7 @@ export const setDefaultImageUrl = async (token: string, defaultImages: object) =
 
 	return res;
 };
+// END Synechron Customization
 
 export const getBanners = async (token: string): Promise<Banner[]> => {
 	let error = null;

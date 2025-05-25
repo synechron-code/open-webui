@@ -69,8 +69,11 @@
 
 	let webSearch = null;
 
+	
+	// START Synechron Customization
 	let iframeSandboxAllowSameOrigin = true;
-	let iframeSandboxAllowForms = true;
+	let iframeSandboxAllowForms = true;	
+	// END Synechron Customization
 
 	const toggleExpandDetails = () => {
 		expandDetails = !expandDetails;

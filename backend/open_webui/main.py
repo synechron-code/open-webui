@@ -300,6 +300,7 @@ from open_webui.config import (
     DEFAULT_PROMPT_SUGGESTIONS,
     DEFAULT_MODELS,
     DEFAULT_ARENA_MODEL,
+    
     # START Synechron Customization
     CHAT_BACKGROUND_IMAGE,
     CHAT_BACKGROUND_DARK_IMAGE,
@@ -308,6 +309,7 @@ from open_webui.config import (
     LOGO_DARK_IMAGE,
     LOGO_SMALL_DARK_IMAGE,
     ENABLE_BACKGROUND_FADE,
+    
     # END Synechron Customization
     MODEL_ORDER_LIST,
     EVALUATION_ARENA_MODELS,

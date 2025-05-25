@@ -15,9 +15,7 @@
 
 	export let channel;
 
-    ///////////////////////////////////////////////
-    // Synechron Customization for background image
-    ///////////////////////////////////////////////
+	// START Synechron Customization
     let logoImage: string = "";
 
     // Watch for changes in dark mode
@@ -51,7 +49,8 @@
             }
         });
     }
-    // End of Synechron Customization
+    // End Synechron Customization
+
 </script>
 
 <nav class="sticky top-0 z-30 w-full px-1.5 py-1.5 -mb-8 flex items-center drag-region">

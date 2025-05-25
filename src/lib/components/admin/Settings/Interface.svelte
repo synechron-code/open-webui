@@ -4,12 +4,16 @@
 
 	import { getBackendConfig, getModels, getTaskConfig, updateTaskConfig } from '$lib/apis';
 	import { setDefaultPromptSuggestions } from '$lib/apis/configs';
+
+	// START Synechron Customization
 	import { setEnableBackgroundFade } from '$lib/apis/configs';
 	import { setDefaultImageUrl } from '$lib/apis/configs';
+    import { defaultImageUrl } from '$lib/stores';
+	// END Synechron Customization
+
 	import { config, settings, user } from '$lib/stores';
 	import { createEventDispatcher, onMount, getContext } from 'svelte';
 
-    import { defaultImageUrl } from '$lib/stores';
 	import { banners as _banners } from '$lib/stores';
 	import type { Banner } from '$lib/types';
 

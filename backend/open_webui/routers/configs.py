@@ -294,6 +294,7 @@ async def set_default_suggestions(
     return request.app.state.config.DEFAULT_PROMPT_SUGGESTIONS
 
 
+# START Synechron Customization
 ############################
 # SetEnableBackgroundFadeForm
 ############################
@@ -342,6 +343,7 @@ async def set_default_image(
         "LOGO_DARK_IMAGE": request.app.state.config.LOGO_DARK_IMAGE,
         "LOGO_SMALL_DARK_IMAGE": request.app.state.config.LOGO_SMALL_DARK_IMAGE,
     }
+# END Synechron Customization
 
 
 ############################

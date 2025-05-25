@@ -14,7 +14,9 @@
 		showSidebar,
 		temporaryChatEnabled,
 		user,
-        isDarkMode,
+		// START Synechron Customization
+        isDarkMode,	
+		// END Synechron Customization
 	} from '$lib/stores';
 
 	import { slide } from 'svelte/transition';

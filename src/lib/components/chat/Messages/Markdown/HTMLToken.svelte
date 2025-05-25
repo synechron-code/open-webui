@@ -59,6 +59,7 @@
 		{@const match = token.text.match(/<file type="html" id="([^"]+)"/)}
 		{@const fileId = match && match[1]}
 		{#if fileId}
+			<!-- START Synechron Customization -->
 			<iframe
 				class="w-full my-2"
 				src={`${WEBUI_BASE_URL}/api/v1/files/${fileId}/content/html`}
@@ -72,6 +73,7 @@
 				width="100%"
 				onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"
 			></iframe>
+			<!-- END Synechron Customization -->
 		{/if}
 	{:else if token.text.includes(`<source_id`)}
 		<Source {id} {token} onClick={onSourceClick} />

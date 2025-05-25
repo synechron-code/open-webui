@@ -37,11 +37,10 @@
 		showArtifacts,
 		tools,
 		toolServers,
-        ///////////////////////////////////////////////
-        // Synechron Customization for background image
-        ///////////////////////////////////////////////
-        isDarkMode,
-        // End of Synechron Customization
+		// START Synechron Customization
+        isDarkMode,	
+		// END Synechron Customization
+
 	} from '$lib/stores';
 	import {
 		convertMessagesToHistory,

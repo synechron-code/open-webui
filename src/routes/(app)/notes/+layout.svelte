@@ -23,9 +23,9 @@
 			goto('/');
 		}
 
-        ///////////////////////////////////////////////
-        // Synechron Customization to detect dark mode
-        ///////////////////////////////////////////////
+		loaded = true;
+	
+		// START Synechron Customization
         const updateDarkMode = () => {
             isDarkMode.set(document.documentElement.classList.contains('dark'));
         };
@@ -39,20 +39,13 @@
 
         // End of Synechron Customization
 
-		loaded = true;
 
-        ///////////////////////////////////////////////
-        // Synechron Customization to detect dark mode
-        ///////////////////////////////////////////////
         return () => observer.disconnect();
-        // End of Synechron Customization
+        // END Synechron Customization
 	});
 
 
-
-    ///////////////////////////////////////////////
-    // Synechron Customization to detect dark mode
-    ///////////////////////////////////////////////
+	// START Synechron Customization
     // Reactive statement to update logoImage based on conditions
     $: {
         const darkMode = $isDarkMode; // Access the value of isDarkMode
@@ -68,7 +61,7 @@
             }
         });
     }
-    // End of Synechron Customization
+    // END Synechron Customization
 </script>
 
 <svelte:head>
@@ -126,6 +119,7 @@
 									class="select-none flex rounded-xl p-1.5 w-full hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 									aria-label="User Menu"
 								>
+									<!-- START Synechron Customization -->
 									<div class=" self-center">
 										<img
 											src={logoImage || $user?.profile_image_url}
@@ -135,6 +129,7 @@
                                             style="width: {logoImage ? 'auto' : '1.5rem'}; height: {logoImage ?  '2rem' : '1.5rem'};"
 										/>
 									</div>
+									<!-- END Synechron Customization -->
 								</button>
 							</UserMenu>
 						{/if}

@@ -558,6 +558,7 @@ PIP_PACKAGE_INDEX_OPTIONS = os.getenv("PIP_PACKAGE_INDEX_OPTIONS", "").split()
 
 EXTERNAL_PWA_MANIFEST_URL = os.environ.get("EXTERNAL_PWA_MANIFEST_URL")
 
+# START Synechron Customization
 ####################################
 # DEFAULT IMAGES
 ####################################
@@ -567,3 +568,4 @@ DEFAULT_LOGO_IMAGE = os.environ.get("DEFAULT_LOGO_IMAGE", "")
 DEFAULT_LOGO_SMALL_IMAGE = os.environ.get("DEFAULT_LOGO_SMALL_IMAGE", "")
 DEFAULT_LOGO_DARK_IMAGE = os.environ.get("DEFAULT_LOGO_DARK_IMAGE", "")
 DEFAULT_LOGO_SMALL_DARK_IMAGE = os.environ.get("DEFAULT_LOGO_SMALL_DARK_IMAGE", "")
+# END Synechron Customization

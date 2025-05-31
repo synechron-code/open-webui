@@ -12,10 +12,12 @@ aiohttp==3.11.11
 async-timeout
 aiocache
 aiofiles
+starlette-compress==1.6.0
+
 
 sqlalchemy==2.0.38
 alembic==1.14.0
-peewee==3.17.9
+peewee==3.18.1
 peewee-migrate==1.12.2
 psycopg2-binary==2.9.9
 pgvector==0.4.0
@@ -116,7 +118,6 @@ google-cloud-storage==2.19.0
 
 azure-identity==1.21.0
 azure-storage-blob==12.24.1
-azure-monitor-opentelemetry==1.6.9
 
 
 ## LDAP

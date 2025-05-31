@@ -97,9 +97,6 @@
 
 	export let chatIdProp = '';
 
-    console.log('config:', $config);
-
-
 	let loading = true;
 
 	const eventTarget = new EventTarget();

@@ -418,6 +418,9 @@
 
 				<hr class=" border-gray-100 dark:border-gray-850 my-2" />
 
+				<div class="mb-2.5">
+					<div class="flex w-full justify-between">
+						<div class=" self-center text-sm">
 				<div class="my-3 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
 						{$i18n.t('Enable Background Fade')}

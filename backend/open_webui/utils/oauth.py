@@ -353,7 +353,6 @@ class OAuthManager:
             raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_CRED)
         user_data: UserInfo = token.get("userinfo")
 
-        log.info(f"User oauth data: {user_data}")
         log.debug(f"User oauth data: {user_data}")
 
         if not user_data or auth_manager_config.OAUTH_EMAIL_CLAIM not in user_data:
@@ -514,8 +513,7 @@ class OAuthManager:
             expires_delta=parse_duration(auth_manager_config.JWT_EXPIRES_IN),
         )
 
-        # if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
-        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT:
+        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
             self.update_user_groups(
                 user=user,
                 user_data=user_data,

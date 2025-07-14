@@ -201,7 +201,60 @@ class OAuthManager:
                 role = user.role
 
         return role
-    
+
+    async def _get_microsoft_groups(self, token=None):
+        try:
+            if token:
+                access_token = token.get("access_token")
+                expires_in = token.get("expires_in")
+                if expires_in:
+                    expires_on = int(time.time() + expires_in)
+                else:
+                    expires_on = 9999999999
+            else:
+                access_token = None
+
+            if access_token:
+                credential = AccessTokenCredential(access_token, expires_on)
+            else:
+                credential = DefaultAzureCredential(logging_enable=False)
+
+            graph_client = GraphServiceClient(credential)
+            groups_response = await graph_client.me.member_of.get()
+            
+            log.debug(f"Microsoft groups response: {groups_response}")
+            
+            if not groups_response or not groups_response.value:
+                log.debug("Microsoft groups not found")
+                return []
+            
+            group_names = []
+            for directory_object in groups_response.value:
+                # Only process groups, not other directory objects
+                if (hasattr(directory_object, 'odata_type') and 
+                    directory_object.odata_type == "#microsoft.graph.group"):
+                    
+                    display_name = getattr(directory_object, 'display_name', None)
+                    if display_name:
+                        group_names.append(display_name)
+                        # Cache the group name
+                        group_id = getattr(directory_object, 'id', None)
+                        if group_id:
+                            self._cache_group_name(group_id, display_name)
+                    else:
+                        # Fallback to group ID if display name is missing
+                        group_id = getattr(directory_object, 'id', None)
+                        if group_id:
+                            group_names.append(group_id)
+                            self._cache_group_name(group_id, group_id)
+            
+            log.debug(f"Microsoft group names: {group_names}")
+            return group_names
+            
+        except Exception as e:
+            log.debug(f"Failed to lookup Microsoft groups: {e}")
+            return []
+
     async def _get_microsoft_group_name(self, group_id, token=None):
         # Check cache first
         cached_name = self._get_cached_group_name(group_id)
@@ -287,10 +340,7 @@ class OAuthManager:
 
         # Azure uses group ObjectIDs instead of names, replace group_id with group_name
         if user_oauth_groups and provider == "microsoft":
-            user_oauth_groups = [
-                await self._get_microsoft_group_name(group_id, token)
-                for group_id in user_oauth_groups
-            ]
+            user_oauth_groups = await self._get_microsoft_groups(token)
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()

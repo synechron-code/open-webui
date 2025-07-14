@@ -10,7 +10,8 @@ from typing import Dict, Tuple
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
 from authlib.oidc.core import UserInfo
-from azure.identity import DefaultAzureCredential, StaticTokenCredential
+from azure.identity import DefaultAzureCredential
+from azure.core.credentials import AccessToken, AzureKeyCredential
 from msgraph.graph_service_client import GraphServiceClient
 from fastapi import (
     HTTPException,
@@ -84,6 +85,18 @@ auth_manager_config.OAUTH_ALLOWED_DOMAINS = OAUTH_ALLOWED_DOMAINS
 auth_manager_config.WEBHOOK_URL = WEBHOOK_URL
 auth_manager_config.JWT_EXPIRES_IN = JWT_EXPIRES_IN
 auth_manager_config.OAUTH_UPDATE_PICTURE_ON_LOGIN = OAUTH_UPDATE_PICTURE_ON_LOGIN
+
+
+class AccessTokenCredential:
+    """Simple credential wrapper for OAuth access tokens."""
+    
+    def __init__(self, access_token: str, expires_on: int = 9999999999):
+        self.access_token = access_token
+        self.expires_on = expires_on
+    
+    def get_token(self, *scopes, **kwargs):
+        """Return the access token for Microsoft Graph requests."""
+        return AccessToken(self.access_token, self.expires_on)
 
 
 class OAuthManager:
@@ -189,23 +202,35 @@ class OAuthManager:
 
         return role
     
-    async def get_microsoft_group_name(self, group_id, access_token=None):
+    async def _get_microsoft_group_name(self, group_id, token=None):
         # Check cache first
         cached_name = self._get_cached_group_name(group_id)
         if cached_name:
             return cached_name
             
         try:
+            if token:
+                access_token = token.get("access_token")
+                expires_in = token.get("expires_in")
+                if expires_in:
+                    expires_on = int(time.time() + expires_in)
+                else:
+                    expires_on = 9999999999
+            else:
+                access_token = None
+
             if access_token:
                 # Use the OAuth access token directly
                 # Create a credential using the access token
-                credential = StaticTokenCredential(access_token)
-                graph_client = GraphServiceClient(credential)
+                credential = AccessTokenCredential(
+                    access_token,
+                    expires_on
+                )
             else:
                 # Fallback to DefaultAzureCredential
                 credential = DefaultAzureCredential(logging_enable=False)
-                graph_client = GraphServiceClient(credential)
-                
+
+            graph_client = GraphServiceClient(credential)
             group = await graph_client.groups.by_group_id(group_id).get()
             if not group:
                 log.debug(f"Microsoft group {group_id} not found")
@@ -234,7 +259,7 @@ class OAuthManager:
             return group_id
 
     async def update_user_groups(
-        self, provider, user, user_data, default_permissions, access_token=None
+        self, provider, user, user_data, default_permissions, token=None
     ):
         log.debug(f"Running OAUTH Group management for provider: {provider}")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
@@ -263,7 +288,7 @@ class OAuthManager:
         # Azure uses group ObjectIDs instead of names, replace group_id with group_name
         if user_oauth_groups and provider == "microsoft":
             user_oauth_groups = [
-                await self.get_microsoft_group_name(group_id, access_token) 
+                await self._get_microsoft_group_name(group_id, token)
                 for group_id in user_oauth_groups
             ]
 
@@ -616,7 +641,7 @@ class OAuthManager:
                 user=user,
                 user_data=user_data,
                 default_permissions=request.app.state.config.USER_PERMISSIONS,
-                access_token=token.get("access_token"),
+                token=token,
             )
 
         # Set the cookie token

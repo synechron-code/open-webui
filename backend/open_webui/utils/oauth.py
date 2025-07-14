@@ -4,6 +4,7 @@ import mimetypes
 import sys
 import uuid
 import json
+import asyncio
 
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
@@ -146,11 +147,11 @@ class OAuthManager:
 
         return role
     
-    def get_microsoft_group_name(self, group_id):
+    async def get_microsoft_group_name(self, group_id):
         try:
             credential = DefaultAzureCredential()
             graph_client = GraphServiceClient(credential)
-            group = graph_client.groups.by_group_id(group_id).get()
+            group = await graph_client.groups.by_group_id(group_id).get()
             if not group:
                 log.debug(f"Microsoft group {group_id} not found")
                 return group_id
@@ -163,8 +164,8 @@ class OAuthManager:
             log.debug(f"Failed to lookup Microsoft group name for ID {group_id}: {e}")
             return group_id
 
-    def update_user_groups(self, provider, user, user_data, default_permissions):
-        log.debug("Running OAUTH Group management for provider: {provider}")
+    async def update_user_groups(self, provider, user, user_data, default_permissions):
+        log.debug("Running OAUTH Group management for provider: {}", provider)
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
 
         try:
@@ -190,7 +191,7 @@ class OAuthManager:
 
         # Azure uses group ObjectIDs instead of names, replace group_id with group_name
         if user_oauth_groups and provider == "microsoft":
-            user_oauth_groups = [self.get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
+            user_oauth_groups = [await self.get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()
@@ -536,7 +537,7 @@ class OAuthManager:
 
         # if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
         if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT:
-            self.update_user_groups(
+            await self.update_user_groups(
                 provider=provider,
                 user=user,
                 user_data=user_data,

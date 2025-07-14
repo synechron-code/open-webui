@@ -9,7 +9,7 @@ import aiohttp
 from authlib.integrations.starlette_client import OAuth
 from authlib.oidc.core import UserInfo
 from azure.identity import DefaultAzureCredential
-from msgraph import GraphServiceClient
+from msgraph.graph_service_client import GraphServiceClient
 from fastapi import (
     HTTPException,
     status,

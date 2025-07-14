@@ -4,7 +4,6 @@ import mimetypes
 import sys
 import uuid
 import json
-import asyncio
 
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
@@ -165,7 +164,7 @@ class OAuthManager:
             return group_id
 
     async def update_user_groups(self, provider, user, user_data, default_permissions):
-        log.debug("Running OAUTH Group management for provider: {}", provider)
+        log.debug(f"Running OAUTH Group management for provider: {provider}")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
 
         try:

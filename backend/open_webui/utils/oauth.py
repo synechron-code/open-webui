@@ -528,7 +528,7 @@ class OAuthManager:
         )
 
         # if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
-        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT":
+        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT:
             self.update_user_groups(
                 provider=provider,
                 user=user,

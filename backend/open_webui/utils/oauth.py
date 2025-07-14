@@ -58,6 +58,10 @@ logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OAUTH"])
 
+# Set the logging level for all azure-* and msgraph libraries
+logging.getLogger('azure').setLevel(logging.INFO)
+logging.getLogger('msgraph').setLevel(logging.INFO)
+
 auth_manager_config = AppConfig()
 auth_manager_config.DEFAULT_USER_ROLE = DEFAULT_USER_ROLE
 auth_manager_config.ENABLE_OAUTH_SIGNUP = ENABLE_OAUTH_SIGNUP

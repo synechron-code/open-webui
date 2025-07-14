@@ -13,6 +13,9 @@ from authlib.oidc.core import UserInfo
 from azure.identity import DefaultAzureCredential
 from azure.core.credentials import AccessToken, AzureKeyCredential
 from msgraph.graph_service_client import GraphServiceClient
+from msgraph.generated.groups.groups_request_builder import GroupsRequestBuilder
+from kiota_abstractions.base_request_configuration import RequestConfiguration
+
 from fastapi import (
     HTTPException,
     status,
@@ -220,7 +223,14 @@ class OAuthManager:
                 credential = DefaultAzureCredential(logging_enable=False)
 
             graph_client = GraphServiceClient(credential)
-            groups_response = await graph_client.me.member_of.get()
+
+            query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(
+                    select=["id", "description", "displayName"],
+            )
+            request_configuration = RequestConfiguration(
+                query_parameters=query_params,
+            )
+            groups_response = await graph_client.me.member_of.get(request_configuration=request_configuration)
             
             log.debug(f"Microsoft groups response: {groups_response}")
             
@@ -229,25 +239,34 @@ class OAuthManager:
                 return []
             
             group_names = []
+            groups_with_names = 0
+            groups_without_names = 0
+            
             for directory_object in groups_response.value:
                 # Only process groups, not other directory objects
                 if (hasattr(directory_object, 'odata_type') and 
                     directory_object.odata_type == "#microsoft.graph.group"):
                     
+                    group_id = getattr(directory_object, 'id', None)
                     display_name = getattr(directory_object, 'display_name', None)
-                    if display_name:
-                        group_names.append(display_name)
-                        # Cache the group name
-                        group_id = getattr(directory_object, 'id', None)
-                        if group_id:
+                    
+                    if group_id:
+                        if display_name:
+                            # Use display name if available
+                            group_names.append(display_name)
                             self._cache_group_name(group_id, display_name)
-                    else:
-                        # Fallback to group ID if display name is missing
-                        group_id = getattr(directory_object, 'id', None)
-                        if group_id:
+                            groups_with_names += 1
+                            log.debug(f"Found group with display name: {display_name} (ID: {group_id})")
+                        else:
+                            # Fallback to group ID if display name is missing
                             group_names.append(group_id)
                             self._cache_group_name(group_id, group_id)
+                            groups_without_names += 1
+                            log.debug(f"Found group with no display name, using ID: {group_id}")
+                    else:
+                        log.warning(f"Group object has no ID: {directory_object}")
             
+            log.debug(f"Processed {len(group_names)} groups: {groups_with_names} with names, {groups_without_names} without names")
             log.debug(f"Microsoft group names: {group_names}")
             return group_names
             

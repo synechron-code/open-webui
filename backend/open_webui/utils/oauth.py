@@ -161,7 +161,7 @@ class OAuthManager:
             return group_id
 
     def update_user_groups(self, provider, user, user_data, default_permissions):
-        log.debug("Running OAUTH Group management")
+        log.debug("Running OAUTH Group management for provider: {provider}")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
 
         try:

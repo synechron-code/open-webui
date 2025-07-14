@@ -4,6 +4,8 @@ import mimetypes
 import sys
 import uuid
 import json
+import time
+from typing import Dict, Tuple
 
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
@@ -88,19 +90,48 @@ class OAuthManager:
     def __init__(self, app):
         self.oauth = OAuth()
         self.app = app
+        # Cache for Microsoft group names: group_id -> (display_name, timestamp)
+        self._group_name_cache: Dict[str, Tuple[str, float]] = {}
+        self._cache_ttl = 3600  # 1 hour TTL for group name cache
+        
         for _, provider_config in OAUTH_PROVIDERS.items():
             provider_config["register"](self.oauth)
 
     def get_client(self, provider_name):
         return self.oauth.create_client(provider_name)
+    
+    def _is_cache_valid(self, timestamp: float) -> bool:
+        """Check if cache entry is still valid based on TTL."""
+        return time.time() - timestamp < self._cache_ttl
+    
+    def _get_cached_group_name(self, group_id: str) -> str:
+        """Get group name from cache if valid, otherwise return None."""
+        if group_id in self._group_name_cache:
+            display_name, timestamp = self._group_name_cache[group_id]
+            if self._is_cache_valid(timestamp):
+                log.debug(
+                    f"Cache hit for Microsoft group {group_id}: {display_name}"
+                )
+                return display_name
+            else:
+                # Remove expired cache entry
+                del self._group_name_cache[group_id]
+        return None
+    
+    def _cache_group_name(self, group_id: str, display_name: str) -> None:
+        """Cache the group name with current timestamp."""
+        self._group_name_cache[group_id] = (display_name, time.time())
+        log.debug(f"Cached Microsoft group {group_id}: {display_name}")
 
     def get_user_role(self, user, user_data):
         if user and Users.get_num_users() == 1:
-            # If the user is the only user, assign the role "admin" - actually repairs role for single user on login
+            # If the user is the only user, assign the role "admin" - 
+            # actually repairs role for single user on login
             log.debug("Assigning the only user the admin role")
             return "admin"
         if not user and Users.get_num_users() == 0:
-            # If there are no users, assign the role "admin", as the first user will be an admin
+            # If there are no users, assign the role "admin", as the first 
+            # user will be an admin
             log.debug("Assigning the first user the admin role")
             return "admin"
 
@@ -113,7 +144,8 @@ class OAuthManager:
             # Default/fallback role if no matching roles are found
             role = auth_manager_config.DEFAULT_USER_ROLE
 
-            # Next block extracts the roles from the user data, accepting nested claims of any depth
+            # Next block extracts the roles from the user data, accepting 
+            # nested claims of any depth
             if oauth_claim and oauth_allowed_roles and oauth_admin_roles:
                 claim_data = user_data
                 nested_claims = oauth_claim.split(".")
@@ -126,49 +158,76 @@ class OAuthManager:
             log.debug(f"Accepted user roles: {oauth_allowed_roles}")
             log.debug(f"Accepted admin roles: {oauth_admin_roles}")
 
-            # If any roles are found, check if they match the allowed or admin roles
+            # If any roles are found, check if they match the allowed or 
+            # admin roles
             if oauth_roles:
-                # If role management is enabled, and matching roles are provided, use the roles
+                # If role management is enabled, and matching roles are 
+                # provided, use the roles
                 for allowed_role in oauth_allowed_roles:
-                    # If the user has any of the allowed roles, assign the role "user"
+                    # If the user has any of the allowed roles, assign the 
+                    # role "user"
                     if allowed_role in oauth_roles:
                         log.debug("Assigned user the user role")
                         role = "user"
                         break
                 for admin_role in oauth_admin_roles:
-                    # If the user has any of the admin roles, assign the role "admin"
+                    # If the user has any of the admin roles, assign the 
+                    # role "admin"
                     if admin_role in oauth_roles:
                         log.debug("Assigned user the admin role")
                         role = "admin"
                         break
         else:
             if not user:
-                # If role management is disabled, use the default role for new users
+                # If role management is disabled, use the default role for 
+                # new users
                 role = auth_manager_config.DEFAULT_USER_ROLE
             else:
-                # If role management is disabled, use the existing role for existing users
+                # If role management is disabled, use the existing role for 
+                # existing users
                 role = user.role
 
         return role
     
     async def get_microsoft_group_name(self, group_id):
+        # Check cache first
+        cached_name = self._get_cached_group_name(group_id)
+        if cached_name:
+            return cached_name
+            
         try:
             credential = DefaultAzureCredential(logging_enable=False)
             graph_client = GraphServiceClient(credential)
             group = await graph_client.groups.by_group_id(group_id).get()
             if not group:
                 log.debug(f"Microsoft group {group_id} not found")
+                # Cache the group_id as the display name when not found
+                self._cache_group_name(group_id, group_id)
                 return group_id
             log.debug(f"Microsoft group: {group}")
             if not group.display_name:
-                log.debug(f"Microsoft group {group_id} has no display name, using group_id")
+                log.debug(
+                    f"Microsoft group {group_id} has no display name, "
+                    f"using group_id"
+                )
+                # Cache the group_id as the display name when no display name
+                self._cache_group_name(group_id, group_id)
                 return group_id
+            
+            # Cache the successful lookup
+            self._cache_group_name(group_id, group.display_name)
             return group.display_name
         except Exception as e:
-            log.debug(f"Failed to lookup Microsoft group name for ID {group_id}: {e}")
+            log.debug(
+                f"Failed to lookup Microsoft group name for ID {group_id}: {e}"
+            )
+            # Cache the group_id as fallback on error
+            self._cache_group_name(group_id, group_id)
             return group_id
 
-    async def update_user_groups(self, provider, user, user_data, default_permissions):
+    async def update_user_groups(
+        self, provider, user, user_data, default_permissions
+    ):
         log.debug(f"Running OAUTH Group management for provider: {provider}")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
 

@@ -8,6 +8,8 @@ import json
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
 from authlib.oidc.core import UserInfo
+from azure.identity import DefaultAzureCredential
+from msgraph import GraphServiceClient
 from fastapi import (
     HTTPException,
     status,
@@ -143,8 +145,14 @@ class OAuthManager:
                 role = user.role
 
         return role
+    
+    def get_azure_group_name(self, group_id):
+        credential = DefaultAzureCredential()
+        graph_client = GraphServiceClient(credential)
+        group = graph_client.groups.by_group_id(group_id).get()
+        return group.display_name
 
-    def update_user_groups(self, user, user_data, default_permissions):
+    def update_user_groups(self, provider, user, user_data, default_permissions):
         log.debug("Running OAUTH Group management")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
 
@@ -168,6 +176,10 @@ class OAuthManager:
                 user_oauth_groups = [claim_data]
             else:
                 user_oauth_groups = []
+
+        # Azure uses group IDs instead of names, replace group_id with group_name
+        if user_oauth_groups and provider == "azure":
+            user_oauth_groups = [self.get_azure_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()
@@ -352,9 +364,6 @@ class OAuthManager:
             log.warning(f"OAuth callback error: {e}")
             raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_CRED)
         user_data: UserInfo = token.get("userinfo")
-
-        log.debug(f"User oauth data: {user_data}")
-
         if not user_data or auth_manager_config.OAUTH_EMAIL_CLAIM not in user_data:
             user_data: UserInfo = await client.userinfo(token=token)
         if not user_data:
@@ -515,6 +524,7 @@ class OAuthManager:
 
         if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
             self.update_user_groups(
+                provider=provider,
                 user=user,
                 user_data=user_data,
                 default_permissions=request.app.state.config.USER_PERMISSIONS,

@@ -58,9 +58,10 @@ logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OAUTH"])
 
-# Set the logging level for all azure-* and msgraph libraries
-logging.getLogger('azure').setLevel(logging.INFO)
-logging.getLogger('msgraph').setLevel(logging.INFO)
+# Set the logging level libraries
+for logger_name in ['azure', 'msgraph', 'httpcore', 'hpack', 'urllib3']:
+    logger = logging.getLogger(logger_name)
+    logger.setLevel("WARNING")
 
 auth_manager_config = AppConfig()
 auth_manager_config.DEFAULT_USER_ROLE = DEFAULT_USER_ROLE
@@ -152,7 +153,7 @@ class OAuthManager:
     
     async def get_microsoft_group_name(self, group_id):
         try:
-            credential = DefaultAzureCredential()
+            credential = DefaultAzureCredential(logging_enable=False)
             graph_client = GraphServiceClient(credential)
             group = await graph_client.groups.by_group_id(group_id).get()
             if not group:

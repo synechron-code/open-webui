@@ -10,7 +10,7 @@ from typing import Dict, Tuple
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
 from authlib.oidc.core import UserInfo
-from azure.identity import DefaultAzureCredential
+from azure.identity import DefaultAzureCredential, StaticTokenCredential
 from msgraph.graph_service_client import GraphServiceClient
 from fastapi import (
     HTTPException,
@@ -189,15 +189,23 @@ class OAuthManager:
 
         return role
     
-    async def get_microsoft_group_name(self, group_id):
+    async def get_microsoft_group_name(self, group_id, access_token=None):
         # Check cache first
         cached_name = self._get_cached_group_name(group_id)
         if cached_name:
             return cached_name
             
         try:
-            credential = DefaultAzureCredential(logging_enable=False)
-            graph_client = GraphServiceClient(credential)
+            if access_token:
+                # Use the OAuth access token directly
+                # Create a credential using the access token
+                credential = StaticTokenCredential(access_token)
+                graph_client = GraphServiceClient(credential)
+            else:
+                # Fallback to DefaultAzureCredential
+                credential = DefaultAzureCredential(logging_enable=False)
+                graph_client = GraphServiceClient(credential)
+                
             group = await graph_client.groups.by_group_id(group_id).get()
             if not group:
                 log.debug(f"Microsoft group {group_id} not found")
@@ -226,7 +234,7 @@ class OAuthManager:
             return group_id
 
     async def update_user_groups(
-        self, provider, user, user_data, default_permissions
+        self, provider, user, user_data, default_permissions, access_token=None
     ):
         log.debug(f"Running OAUTH Group management for provider: {provider}")
         oauth_claim = auth_manager_config.OAUTH_GROUPS_CLAIM
@@ -254,7 +262,10 @@ class OAuthManager:
 
         # Azure uses group ObjectIDs instead of names, replace group_id with group_name
         if user_oauth_groups and provider == "microsoft":
-            user_oauth_groups = [await self.get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
+            user_oauth_groups = [
+                await self.get_microsoft_group_name(group_id, access_token) 
+                for group_id in user_oauth_groups
+            ]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()
@@ -605,6 +616,7 @@ class OAuthManager:
                 user=user,
                 user_data=user_data,
                 default_permissions=request.app.state.config.USER_PERMISSIONS,
+                access_token=token.get("access_token"),
             )
 
         # Set the cookie token

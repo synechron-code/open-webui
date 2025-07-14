@@ -59,7 +59,7 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OAUTH"])
 
 # Set the logging level libraries
-for logger_name in ['azure', 'msgraph', 'httpcore', 'hpack', 'urllib3']:
+for logger_name in ['azure', 'msgraph', 'httpcore', 'hpack', 'httpx', 'msal', 'urllib3']:
     logger = logging.getLogger(logger_name)
     logger.setLevel("WARNING")
 

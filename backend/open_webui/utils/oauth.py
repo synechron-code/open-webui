@@ -147,10 +147,14 @@ class OAuthManager:
         return role
     
     def get_azure_group_name(self, group_id):
-        credential = DefaultAzureCredential()
-        graph_client = GraphServiceClient(credential)
-        group = graph_client.groups.by_group_id(group_id).get()
-        return group.display_name
+        try:
+            credential = DefaultAzureCredential()
+            graph_client = GraphServiceClient(credential)
+            group = graph_client.groups.by_group_id(group_id).get()
+            return group.display_name
+        except Exception as e:
+            log.debug(f"Failed to lookup Azure group name for ID {group_id}: {e}")
+            return group_id
 
     def update_user_groups(self, provider, user, user_data, default_permissions):
         log.debug("Running OAUTH Group management")

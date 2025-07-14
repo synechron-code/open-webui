@@ -58,8 +58,6 @@ logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OAUTH"])
 
-log.info(f"SET LOG LEVEL: {SRC_LOG_LEVELS['OAUTH']}")
-
 auth_manager_config = AppConfig()
 auth_manager_config.DEFAULT_USER_ROLE = DEFAULT_USER_ROLE
 auth_manager_config.ENABLE_OAUTH_SIGNUP = ENABLE_OAUTH_SIGNUP
@@ -235,10 +233,10 @@ class OAuthManager:
                 all_available_groups = Groups.get_groups()
                 log.debug("Refreshed list of all available groups after creation.")
 
-        log.info(f"Oauth Groups claim: {oauth_claim}")
-        log.info(f"User oauth groups: {user_oauth_groups}")
-        log.info(f"User's current groups: {[g.name for g in user_current_groups]}")
-        log.info(
+        log.debug(f"Oauth Groups claim: {oauth_claim}")
+        log.debug(f"User oauth groups: {user_oauth_groups}")
+        log.debug(f"User's current groups: {[g.name for g in user_current_groups]}")
+        log.debug(
             f"All groups available in OpenWebUI: {[g.name for g in all_available_groups]}"
         )
 
@@ -370,7 +368,6 @@ class OAuthManager:
             log.warning(f"OAuth callback error: {e}")
             raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_CRED)
         user_data: UserInfo = token.get("userinfo")
-        log.info(f"User oauth data: {user_data}")
         log.debug(f"User oauth data: {user_data}")
         if not user_data or auth_manager_config.OAUTH_EMAIL_CLAIM not in user_data:
             user_data: UserInfo = await client.userinfo(token=token)
@@ -530,7 +527,8 @@ class OAuthManager:
             expires_delta=parse_duration(auth_manager_config.JWT_EXPIRES_IN),
         )
 
-        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
+        # if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT and user.role != "admin":
+        if auth_manager_config.ENABLE_OAUTH_GROUP_MANAGEMENT":
             self.update_user_groups(
                 provider=provider,
                 user=user,

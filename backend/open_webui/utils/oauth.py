@@ -186,9 +186,8 @@ class OAuthManager:
                 user_oauth_groups = []
 
         # Azure uses group ObjectIDs instead of names, replace group_id with group_name
-        if user_oauth_groups and provider == "azure":
+        if user_oauth_groups and provider == "microsoft":
             user_oauth_groups = [self.get_azure_group_name(group_id) for group_id in user_oauth_groups]
-            log.info(f"Azure user oauth group names: {user_oauth_groups}")
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()

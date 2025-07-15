@@ -240,8 +240,6 @@ class OAuthManager:
                 request_configuration=request_configuration
             )
             
-            log.debug(f"Microsoft groups response: {groups_response}")
-            
             if not groups_response or not groups_response.value:
                 log.debug("Microsoft groups not found")
                 return []
@@ -258,6 +256,7 @@ class OAuthManager:
                     f"Processing page {page_count + 1} with "
                     f"{len(groups_response.value)} groups"
                 )
+                log.debug(f"Microsoft groups response: {groups_response}")
                 
                 for directory_object in groups_response.value:
                     # Only process groups, not other directory objects
@@ -409,7 +408,6 @@ class OAuthManager:
             else:
                 user_oauth_groups = []
 
-        # Azure uses group ObjectIDs instead of names, replace group_id with group_name
         if user_oauth_groups and provider == "microsoft":
             user_oauth_groups = await self._get_microsoft_groups(token)
 

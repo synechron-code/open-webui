@@ -11,9 +11,11 @@ import aiohttp
 from authlib.integrations.starlette_client import OAuth
 from authlib.oidc.core import UserInfo
 from azure.identity import DefaultAzureCredential
-from azure.core.credentials import AccessToken, AzureKeyCredential
+from azure.core.credentials import AccessToken
 from msgraph.graph_service_client import GraphServiceClient
-from msgraph.generated.groups.groups_request_builder import GroupsRequestBuilder
+from msgraph.generated.users.item.member_of.member_of_request_builder import (
+    MemberOfRequestBuilder
+)
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 
 from fastapi import (
@@ -224,13 +226,19 @@ class OAuthManager:
 
             graph_client = GraphServiceClient(credential)
 
-            query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(
-                    select=["id", "description", "displayName"],
+            query_params = (
+                MemberOfRequestBuilder.MemberOfRequestBuilderGetQueryParameters(
+                    select=["id", "displayName", "description"],
+                )
             )
+
             request_configuration = RequestConfiguration(
                 query_parameters=query_params,
             )
-            groups_response = await graph_client.me.member_of.get(request_configuration=request_configuration)
+            # Get the first page of results
+            groups_response = await graph_client.me.member_of.graph_group.get(
+                request_configuration=request_configuration
+            )
             
             log.debug(f"Microsoft groups response: {groups_response}")
             
@@ -241,32 +249,76 @@ class OAuthManager:
             group_names = []
             groups_with_names = 0
             groups_without_names = 0
+            page_count = 0
+            max_pages = 100  # Safety limit to prevent infinite loops
             
-            for directory_object in groups_response.value:
-                # Only process groups, not other directory objects
-                if (hasattr(directory_object, 'odata_type') and 
-                    directory_object.odata_type == "#microsoft.graph.group"):
-                    
-                    group_id = getattr(directory_object, 'id', None)
-                    display_name = getattr(directory_object, 'display_name', None)
-                    
-                    if group_id:
-                        if display_name:
-                            # Use display name if available
-                            group_names.append(display_name)
-                            self._cache_group_name(group_id, display_name)
-                            groups_with_names += 1
-                            log.debug(f"Found group with display name: {display_name} (ID: {group_id})")
+            # Process all pages of results
+            while groups_response and groups_response.value and page_count < max_pages:
+                log.debug(
+                    f"Processing page {page_count + 1} with "
+                    f"{len(groups_response.value)} groups"
+                )
+                
+                for directory_object in groups_response.value:
+                    # Only process groups, not other directory objects
+                    if (hasattr(directory_object, 'odata_type') and 
+                            directory_object.odata_type == 
+                            "#microsoft.graph.group"):
+                        
+                        group_id = getattr(directory_object, 'id', None)
+                        display_name = getattr(
+                            directory_object, 'display_name', None
+                        )
+                        
+                        if group_id:
+                            if display_name:
+                                # Use display name if available
+                                group_names.append(display_name)
+                                self._cache_group_name(group_id, display_name)
+                                groups_with_names += 1
+                                log.debug(
+                                    f"Found group with display name: "
+                                    f"{display_name} (ID: {group_id})"
+                                )
+                            else:
+                                # Fallback to group ID if display name is missing
+                                group_names.append(group_id)
+                                self._cache_group_name(group_id, group_id)
+                                groups_without_names += 1
+                                log.debug(
+                                    f"Found group with no display name, using "
+                                    f"ID: {group_id}"
+                                )
                         else:
-                            # Fallback to group ID if display name is missing
-                            group_names.append(group_id)
-                            self._cache_group_name(group_id, group_id)
-                            groups_without_names += 1
-                            log.debug(f"Found group with no display name, using ID: {group_id}")
-                    else:
-                        log.warning(f"Group object has no ID: {directory_object}")
+                            log.warning(
+                                f"Group object has no ID: {directory_object}"
+                            )
+                
+                # Check if there are more pages
+                if groups_response.odata_next_link:
+                    log.debug(
+                        f"Fetching next page from: "
+                        f"{groups_response.odata_next_link}"
+                    )
+                    groups_response = await graph_client.me.member_of.with_url(
+                        groups_response.odata_next_link
+                    ).get()
+                    page_count += 1
+                else:
+                    log.debug("No more pages available")
+                    break
             
-            log.debug(f"Processed {len(group_names)} groups: {groups_with_names} with names, {groups_without_names} without names")
+            if page_count >= max_pages:
+                log.warning(
+                    f"Reached maximum page limit of {max_pages}. "
+                    f"Some groups may not be included."
+                )
+            
+            log.debug(
+                f"Processed {len(group_names)} groups across {page_count + 1} "
+                f"pages: {groups_with_names} with names, {groups_without_names} "
+                f"without names"
+            )
             log.debug(f"Microsoft group names: {group_names}")
             return group_names
             

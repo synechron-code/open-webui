@@ -423,15 +423,16 @@ class OAuthManager:
             else:
                 user_oauth_groups = []
 
-        if user_oauth_groups and provider == "microsoft":
+        if provider == "microsoft":
             # Get groups for oid
-            user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"))
+            user_oauth_groups = await self._get_microsoft_groups(oid=user_data.get("oid"))
 
             # Get groups for authenticated user
-            # user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"), token)
-            
+            # user_oauth_groups = await self._get_microsoft_groups(token=token)
+
             # replace group objectid with display name from microsoft graph api
-            # user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
+            # if user_oauth_groups:
+            #     user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()

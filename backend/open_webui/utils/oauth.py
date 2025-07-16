@@ -411,7 +411,7 @@ class OAuthManager:
         if user_oauth_groups and provider == "microsoft":
             # user_oauth_groups = await self._get_microsoft_groups(token)
             # TODO: replace group objectid with display name for microsoft groups
-            user_oauth_groups = [self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
+            user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()

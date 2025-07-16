@@ -237,13 +237,18 @@ class OAuthManager:
             )
             # Get the first page of results
             if (oid):
+                log.debug(f"Getting Microsoft groups for user ID: {oid}")
                 groups_response = await graph_client.users.by_user_id(oid).member_of.get(
                     request_configuration=request_configuration
                 )
-            else:
+            elif (access_token):
+                log.debug("Getting Microsoft groups for authenticated user")
                 groups_response = await graph_client.me.member_of.graph_group.get(
                     request_configuration=request_configuration
                 )
+            else:
+                log.warning("Failed to get Microsoft groups, no oid or access token provided")
+                return []
             
             if not groups_response or not groups_response.value:
                 log.debug(f"Microsoft groups not found, groups response: {groups_response}")
@@ -419,8 +424,13 @@ class OAuthManager:
                 user_oauth_groups = []
 
         if user_oauth_groups and provider == "microsoft":
-            user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"), token)
-            # TODO: replace group objectid with display name for microsoft groups
+            # Get groups for oid
+            user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"))
+
+            # Get groups for authenticated user
+            # user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"), token)
+            
+            # replace group objectid with display name from microsoft graph api
             # user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)

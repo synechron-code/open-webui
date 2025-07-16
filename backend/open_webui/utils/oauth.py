@@ -207,7 +207,7 @@ class OAuthManager:
 
         return role
 
-    async def _get_microsoft_groups(self, token=None):
+    async def _get_microsoft_groups(self, oid=None, token=None):
         try:
             if token:
                 access_token = token.get("access_token")
@@ -236,12 +236,17 @@ class OAuthManager:
                 query_parameters=query_params,
             )
             # Get the first page of results
-            groups_response = await graph_client.me.member_of.graph_group.get(
-                request_configuration=request_configuration
-            )
+            if (oid):
+                groups_response = await graph_client.users.by_user_id(oid).member_of.get(
+                    request_configuration=request_configuration
+                )
+            else:
+                groups_response = await graph_client.me.member_of.graph_group.get(
+                    request_configuration=request_configuration
+                )
             
             if not groups_response or not groups_response.value:
-                log.debug("Microsoft groups not found")
+                log.debug(f"Microsoft groups not found, groups response: {groups_response}")
                 return []
             
             group_names = []
@@ -299,9 +304,14 @@ class OAuthManager:
                         f"Fetching next page from: "
                         f"{groups_response.odata_next_link}"
                     )
-                    groups_response = await graph_client.me.member_of.with_url(
-                        groups_response.odata_next_link
-                    ).get()
+                    if (oid):
+                        groups_response = await graph_client.users.by_user_id(oid).member_of.with_url(
+                            groups_response.odata_next_link
+                        ).get()
+                    else:
+                        groups_response = await graph_client.me.member_of.with_url(
+                            groups_response.odata_next_link
+                        ).get()
                     page_count += 1
                 else:
                     log.debug("No more pages available")
@@ -409,9 +419,9 @@ class OAuthManager:
                 user_oauth_groups = []
 
         if user_oauth_groups and provider == "microsoft":
-            # user_oauth_groups = await self._get_microsoft_groups(token)
+            user_oauth_groups = await self._get_microsoft_groups(user_data.get("oid"), token)
             # TODO: replace group objectid with display name for microsoft groups
-            user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
+            # user_oauth_groups = [await self._get_microsoft_group_name(group_id) for group_id in user_oauth_groups]
 
         user_current_groups: list[GroupModel] = Groups.get_groups_by_member_id(user.id)
         all_available_groups: list[GroupModel] = Groups.get_groups()

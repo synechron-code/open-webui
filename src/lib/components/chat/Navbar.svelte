@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { onMount, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	import {
@@ -13,7 +13,10 @@
 		showControls,
 		showSidebar,
 		temporaryChatEnabled,
-		user
+		user,
+		// START Synechron Customization
+        isDarkMode,	
+		// END Synechron Customization
 	} from '$lib/stores';
 
 	import { slide } from 'svelte/transition';
@@ -46,6 +49,44 @@
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
+
+    ///////////////////////////////////////////////
+    // Synechron Customization for background image
+    ///////////////////////////////////////////////
+    let logoImage: string = "";
+
+    // Watch for changes in dark mode
+    onMount(() => {
+        const updateDarkMode = () => {
+            isDarkMode.set(document.documentElement.classList.contains('dark'));
+        };
+
+        // Initial check
+        updateDarkMode();
+
+        // Observe changes to the class attribute
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+    });
+
+    // Reactive statement to update logoImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        mobile.subscribe((value) => {
+            if (darkMode && value) {
+                logoImage = $config.logo_small_dark_image;
+            } else if (darkMode && !value) {
+                logoImage = $config.logo_dark_image;
+            } else if (!darkMode && value) {
+                logoImage = $config.logo_small_image;
+            } else {
+                logoImage = $config.logo_image;
+            }
+        });
+    }
+    // End of Synechron Customization
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
@@ -185,7 +226,7 @@
 
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
-							className="max-w-[240px]"
+							className="max-w-[300px]"
 							role={$user?.role}
 							help={true}
 							on:show={(e) => {
@@ -200,10 +241,11 @@
 								<div class=" self-center">
 									<span class="sr-only">{$i18n.t('User menu')}</span>
 									<img
-										src={$user?.profile_image_url}
-										class="size-6 object-cover rounded-full"
-										alt=""
+										src={logoImage || $user?.profile_image_url}
+										class="object-cover rounded-full"
+										alt="User Profile"
 										draggable="false"
+                                        style="width: {logoImage ? 'auto' : '1.5rem'}; height: {logoImage ?  '2rem' : '1.5rem'};"
 									/>
 								</div>
 							</div>

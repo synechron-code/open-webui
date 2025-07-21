@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, getContext } from 'svelte';
-	import { WEBUI_NAME, showSidebar, functions, config, user, showArchivedChats } from '$lib/stores';
+	import { WEBUI_NAME, showSidebar, functions, config, user, showArchivedChats, isDarkMode } from '$lib/stores';
 	import { goto } from '$app/navigation';
 
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
@@ -9,6 +9,7 @@
 	const i18n = getContext('i18n');
 
 	let loaded = false;
+
 
 	onMount(async () => {
 		if (
@@ -22,7 +23,26 @@
 		}
 
 		loaded = true;
+	
+		// START Synechron Customization
+        const updateDarkMode = () => {
+            isDarkMode.set(document.documentElement.classList.contains('dark'));
+        };
+
+        // Initial check
+        updateDarkMode();
+
+        // Observe changes to the class attribute
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        // End of Synechron Customization
+
+
+        return () => observer.disconnect();
+        // END Synechron Customization
 	});
+
 </script>
 
 <svelte:head>

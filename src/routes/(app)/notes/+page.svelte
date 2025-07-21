@@ -1,5 +1,5 @@
-<script>
-	import { showArchivedChats, showSidebar, user } from '$lib/stores';
+<script lang="ts">
+	import { showArchivedChats, showSidebar, user, mobile, isDarkMode, config } from '$lib/stores';
 	import { getContext } from 'svelte';
 
 	const i18n = getContext('i18n');
@@ -7,6 +7,25 @@
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
 	import UserMenu from '$lib/components/layout/Sidebar/UserMenu.svelte';
 	import Notes from '$lib/components/notes/Notes.svelte';
+
+	// START Synechron Customization
+	let logoImage: string = "";
+    // Reactive statement to update logoImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        mobile.subscribe((value) => {
+            if (darkMode && value) {
+                logoImage = $config.logo_small_dark_image;
+            } else if (darkMode && !value) {
+                logoImage = $config.logo_dark_image;
+            } else if (!darkMode && value) {
+                logoImage = $config.logo_small_image;
+            } else {
+                logoImage = $config.logo_image;
+            }
+        });
+    }
+    // END Synechron Customization
 </script>
 
 <div
@@ -60,10 +79,11 @@
 							>
 								<div class=" self-center">
 									<img
-										src={$user?.profile_image_url}
+										src={logoImage || $user?.profile_image_url}
 										class="size-6 object-cover rounded-full"
 										alt="User profile"
 										draggable="false"
+										style="width: {logoImage ? 'auto' : '1.5rem'}; height: {logoImage ?  '2rem' : '1.5rem'};"
 									/>
 								</div>
 							</button>

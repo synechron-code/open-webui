@@ -36,7 +36,11 @@
 		chatTitle,
 		showArtifacts,
 		tools,
-		toolServers
+		toolServers,
+		// START Synechron Customization
+        isDarkMode,	
+		// END Synechron Customization
+
 	} from '$lib/stores';
 	import {
 		convertMessagesToHistory,
@@ -432,6 +436,18 @@
 		}
 	};
 
+    ///////////////////////////////////////////////
+    // Synechron Customization for background image
+    ///////////////////////////////////////////////
+    let backgroundImage: string = "";
+
+    // Reactive statement to update backgroundImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        backgroundImage = darkMode ? $config.chat_background_dark_image : $config.chat_background_image;
+    };
+    // End of Synechron Customization
+
 	let pageSubscribe = null;
 	onMount(async () => {
 		loading = true;
@@ -501,6 +517,23 @@
 		chatInput?.focus();
 
 		chats.subscribe(() => {});
+
+        ///////////////////////////////////////////////
+        // Synechron Customization for background image
+        ///////////////////////////////////////////////
+        const updateDarkMode = () => {
+            isDarkMode.set(document.documentElement.classList.contains('dark'));
+        };
+
+        // Initial check
+        updateDarkMode();
+
+        // Observe changes to the class attribute
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+        // End of Synechron Customization
 	});
 
 	onDestroy(() => {
@@ -2031,14 +2064,16 @@
 >
 	{#if !loading}
 		<div in:fade={{ duration: 50 }} class="w-full h-full flex flex-col">
-			{#if $settings?.backgroundImageUrl ?? null}
+			{#if $settings?.backgroundImageUrl ?? backgroundImage ?? null}
 				<div
 					class="absolute {$showSidebar
 						? 'md:max-w-[calc(100%-260px)] md:translate-x-[260px]'
 						: ''} top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
-					style="background-image: url({$settings.backgroundImageUrl})  "
+						style="background-image: url({$settings.backgroundImageUrl || backgroundImage})"
 				/>
+			{/if}
 
+            {#if $config?.enable_background_fade}
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
 				/>
@@ -2172,7 +2207,7 @@
 									bind:codeInterpreterEnabled
 									bind:webSearchEnabled
 									bind:atSelectedModel
-									transparentBackground={$settings?.backgroundImageUrl ?? false}
+								transparentBackground={$settings?.backgroundImageUrl ?? backgroundImage ?? false}
 									toolServers={$toolServers}
 									{stopResponse}
 									{createMessagePair}

@@ -84,6 +84,11 @@ export const currentChatPage = writable(1);
 export const isLastActiveTab = writable(true);
 export const playingNotificationSound = writable(false);
 
+// START Synechron Customization
+export const defaultImageUrl = writable({});
+export const isDarkMode = writable(false);	
+// END Synechron Customization
+
 export type Model = OpenAIModel | OllamaModel;
 
 type BaseModel = {
@@ -199,6 +204,9 @@ type Config = {
 	name: string;
 	version: string;
 	default_locale: string;
+	default_background_image: string;
+	chat_background_image: string;
+    enable_background_fade: boolean;
 	default_models: string;
 	default_prompt_suggestions: PromptSuggestion[];
 	features: {

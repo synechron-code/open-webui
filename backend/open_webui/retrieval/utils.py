@@ -86,7 +86,7 @@ def query_doc(
         )
 
         if result:
-            log.info(f"query_doc:result {result.ids} {result.metadatas}")
+            log.debug(f"query_doc:result {result.ids} {result.metadatas}")
 
         return result
     except Exception as e:
@@ -100,7 +100,7 @@ def get_doc(collection_name: str, user: UserModel = None):
         result = VECTOR_DB_CLIENT.get(collection_name=collection_name)
 
         if result:
-            log.info(f"query_doc:result {result.ids} {result.metadatas}")
+            log.debug(f"query_doc:result {result.ids} {result.metadatas}")
 
         return result
     except Exception as e:

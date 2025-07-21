@@ -294,6 +294,58 @@ async def set_default_suggestions(
     return request.app.state.config.DEFAULT_PROMPT_SUGGESTIONS
 
 
+# START Synechron Customization
+############################
+# SetEnableBackgroundFadeForm
+############################
+
+class SetEnableBackgroundFadeForm(BaseModel):
+    ENABLE_BACKGROUND_FADE: bool
+
+
+@router.post("/background_fade", response_model=bool)
+async def set_enable_background_fade(
+    request: Request, form_data: SetEnableBackgroundFadeForm, user=Depends(get_admin_user)
+):
+    request.app.state.config.ENABLE_BACKGROUND_FADE = form_data.ENABLE_BACKGROUND_FADE
+    return request.app.state.config.ENABLE_BACKGROUND_FADE
+
+
+############################
+# SetDefaultImage
+############################
+class SetDefaultImageForm(BaseModel):
+    CHAT_BACKGROUND_IMAGE: str
+    CHAT_BACKGROUND_DARK_IMAGE: str
+    LOGO_IMAGE: str
+    LOGO_SMALL_IMAGE: str
+    LOGO_DARK_IMAGE: str
+    LOGO_SMALL_DARK_IMAGE: str
+
+
+@router.post("/image", response_model=SetDefaultImageForm)
+async def set_default_image(
+    request: Request,
+    form_data: SetDefaultImageForm,
+    user=Depends(get_admin_user),
+):
+    request.app.state.config.CHAT_BACKGROUND_IMAGE = form_data.CHAT_BACKGROUND_IMAGE
+    request.app.state.config.CHAT_BACKGROUND_DARK_IMAGE = form_data.CHAT_BACKGROUND_DARK_IMAGE
+    request.app.state.config.LOGO_IMAGE = form_data.LOGO_IMAGE
+    request.app.state.config.LOGO_SMALL_IMAGE = form_data.LOGO_SMALL_IMAGE
+    request.app.state.config.LOGO_DARK_IMAGE = form_data.LOGO_DARK_IMAGE
+    request.app.state.config.LOGO_SMALL_DARK_IMAGE = form_data.LOGO_SMALL_DARK_IMAGE
+    return {
+        "CHAT_BACKGROUND_IMAGE": request.app.state.config.CHAT_BACKGROUND_IMAGE,
+        "CHAT_BACKGROUND_DARK_IMAGE": request.app.state.config.CHAT_BACKGROUND_DARK_IMAGE,
+        "LOGO_IMAGE": request.app.state.config.LOGO_IMAGE,
+        "LOGO_SMALL_IMAGE": request.app.state.config.LOGO_SMALL_IMAGE,
+        "LOGO_DARK_IMAGE": request.app.state.config.LOGO_DARK_IMAGE,
+        "LOGO_SMALL_DARK_IMAGE": request.app.state.config.LOGO_SMALL_DARK_IMAGE,
+    }
+# END Synechron Customization
+
+
 ############################
 # SetBanners
 ############################

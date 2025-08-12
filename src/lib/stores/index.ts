@@ -87,7 +87,7 @@ export const currentChatPage = writable(1);
 
 export const isLastActiveTab = writable(true);
 export const playingNotificationSound = writable(false);
-	
+
 // START Synechron Customization
 export const defaultImageUrl = writable({});
 export const isDarkMode = writable(false);	

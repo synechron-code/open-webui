@@ -210,7 +210,7 @@
 
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
-							className="max-w-[240px]"
+							className="max-w-[300px]"
 							role={$user?.role}
 							help={true}
 							on:show={(e) => {

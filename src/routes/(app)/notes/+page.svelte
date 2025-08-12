@@ -67,10 +67,11 @@
 							>
 								<div class=" self-center">
 									<img
-										src={$user?.profile_image_url}
+										src={logoImage ?? $user?.profile_image_url}
 										class="size-6 object-cover rounded-full"
 										alt="User profile"
 										draggable="false"
+										style="width: {logoImage ? 'auto' : '1.5rem'}; height: {logoImage ?  '2rem' : '1.5rem'};"
 									/>
 								</div>
 							</button>

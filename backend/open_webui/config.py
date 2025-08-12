@@ -2018,13 +2018,6 @@ if PGVECTOR_PGCRYPTO and not PGVECTOR_PGCRYPTO_KEY:
         "PGVECTOR_PGCRYPTO is enabled but PGVECTOR_PGCRYPTO_KEY is not set. Please provide a valid key."
     )
 
-PGVECTOR_PGCRYPTO = os.getenv("PGVECTOR_PGCRYPTO", "false").lower() == "true"
-PGVECTOR_PGCRYPTO_KEY = os.getenv("PGVECTOR_PGCRYPTO_KEY", None)
-if PGVECTOR_PGCRYPTO and not PGVECTOR_PGCRYPTO_KEY:
-    raise ValueError(
-        "PGVECTOR_PGCRYPTO is enabled but PGVECTOR_PGCRYPTO_KEY is not set. Please provide a valid key."
-    )
-
 
 PGVECTOR_POOL_SIZE = os.environ.get("PGVECTOR_POOL_SIZE", None)
 

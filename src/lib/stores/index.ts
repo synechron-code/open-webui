@@ -93,6 +93,11 @@ export const defaultImageUrl = writable({});
 export const isDarkMode = writable(false);	
 // END Synechron Customization
 
+// START Synechron Customization
+export const defaultImageUrl = writable({});
+export const isDarkMode = writable(false);	
+// END Synechron Customization
+
 export type Model = OpenAIModel | OllamaModel;
 
 type BaseModel = {

@@ -1,5 +1,5 @@
-<script>
-	import { mobile, showArchivedChats, showSidebar, user } from '$lib/stores';
+<script lang="ts">
+	import { mobile, showArchivedChats, showSidebar, user, isDarkMode, config } from '$lib/stores';
 	import { getContext } from 'svelte';
 
 	const i18n = getContext('i18n');
@@ -8,6 +8,25 @@
 	import Notes from '$lib/components/notes/Notes.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Sidebar from '$lib/components/icons/Sidebar.svelte';
+
+	// START Synechron Customization
+	let logoImage: string = "";
+    // Reactive statement to update logoImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        mobile.subscribe((value) => {
+            if (darkMode && value) {
+                logoImage = $config.logo_small_dark_image;
+            } else if (darkMode && !value) {
+                logoImage = $config.logo_dark_image;
+            } else if (!darkMode && value) {
+                logoImage = $config.logo_small_image;
+            } else {
+                logoImage = $config.logo_image;
+            }
+        });
+    }
+    // END Synechron Customization
 </script>
 
 <div

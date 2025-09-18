@@ -50,6 +50,25 @@ If the merge completes without conflicts, skip to verification. If there are con
 
 4) Resolve conflicts (practical tips for this repo)
 
+All Nexus Chat v3 code customizations are bracketed by comments.
+```
+// START Synechron Customization
+:
+<CODE>
+:
+// END Synechron Customization
+```
+
+or
+
+```
+<!-- START Synechron Customization -->
+:
+<CODE>
+:
+<!-- END Synechron Customization -->
+```
+
 Often there are many conflicts in files that have not been customized for Nexus Chat v3. For files not in the list below, you can just accept all incoming changes.
 
 Files with Changes or Additions in Nexus Chat v3:
@@ -104,6 +123,8 @@ origin/open-webui-vX.X.X
 │   ├── .markdownlint.yaml
 │   ├── catalog-info.yaml
 │   └── mkdocs.yaml
+└── docs
+    └── NEXUS-CHAT-v3.md
 ```
 From the provided file tree and diffs, Nexus Chat v3 customizations touch frontend `src/lib/components`, `routes`, `static/assets/images`, and backend `backend/open_webui` routers and retrieval code. Expect conflicts in these areas.
 

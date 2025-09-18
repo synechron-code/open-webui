@@ -69,7 +69,10 @@ or
 <!-- END Synechron Customization -->
 ```
 
-Often there are many conflicts in files that have not been customized for Nexus Chat v3. For files not in the list below, you can just accept all incoming changes.
+Often there are many conflicts in files that have not been customized for Nexus Chat v3. For files not in the list below, you can just accept all incoming changes. A helper script is provided called accept-incoming-except.sh which takes a file name argument for a file containing a list of files customized for Nexus Chat v3 which must have merge conflicts resolved manually. All other files will have merge conflicts resolved by accepting the incoming changes.
+```
+./accept-incoming-except.sh nexus-chat-v3-customized-files.txt
+```
 
 Files with Changes or Additions in Nexus Chat v3:
 ```

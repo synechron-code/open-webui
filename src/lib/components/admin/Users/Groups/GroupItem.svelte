@@ -1,6 +1,7 @@
 <script>
 	import { toast } from 'svelte-sonner';
 	import { onMount, getContext } from 'svelte';
+	import { page } from '$app/stores';
 
 	const i18n = getContext('i18n');
 
@@ -47,7 +48,7 @@
 	};
 
 	onMount(() => {
-		const groupId = querystringValue('id');
+		const groupId = $page.url.searchParams.get('id');
 		if (groupId && groupId === group.id) {
 			showEdit = true;
 		}

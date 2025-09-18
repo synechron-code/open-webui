@@ -3,6 +3,7 @@ site_description: Nexus Chat is a modern, feature-rich and highly customizable A
 docs_dir: docs
 nav:
   - Home: ../README.md
+  - Nexus Chat v3 Customizations and Merge: NEXUS_CHAT_V3.md
   - Apache: apache.md
   - Contribution: CONTRIBUTING.md
   - Security: security.md

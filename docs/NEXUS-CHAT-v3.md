@@ -73,58 +73,35 @@ Often there are many conflicts in files that have not been customized for Nexus 
 
 Files with Changes or Additions in Nexus Chat v3:
 ```
-origin/open-webui-vX.X.X
-├── backend/open_webui
-│   └── retrieval
-│       └── web
-│           ├── serplatform.py
-│           └── utils.py
-├── routers
-│   ├── configs.py
-│   ├── files.py
-│   ├── config.py
-│   ├── env.py
-│   └── main.py
-├── src
-│   ├── lib
-│   │   ├── apis
-│   │   │   └── configs
-│   │   │       └── index.ts
-│   │   ├── components
-│   │   │   ├── admin
-│   │   │   │   └── Settings
-│   │   │   │       └── Interface.svelte
-│   │   │   ├── channel
-│   │   │   │   └── Navbar.svelte
-│   │   │   ├── chat
-│   │   │   │   ├── Messages
-│   │   │   │   │   ├── Markdown
-│   │   │   │   │   │   ├── HTMLToken.svelte
-│   │   │   │   └── chat
-│   │   │   │       ├── Interface.svelte
-│   │   │   │       ├── Chat.svelte
-│   │   │   │       ├── Navbar.svelte
-│   │   │   │       └── SettingsModal.svelte
-│   │   │   └── stores
-│   │   │       └── index.ts
-│   │   ├── routes
-│   │   │   └── notes
-│   │   │       ├── +layout.svelte
-│   │   │       └── +page.svelte
-│   │   └── static
-│   │       └── assets
-│   │           ├── Nexus_Chat_White.png
-│   │           ├── Nexus_Chat.png
-│   │           ├── Nexus3.0_Backdrop_gradient.png
-│   │           ├── Synechron_Black_Logo_O.svg
-│   │           └── Synechron_Yellow_White_Logo_O.svg
-│   ├── .gitlab-ci.yml
-│   ├── .hadolint.yaml
-│   ├── .markdownlint.yaml
-│   ├── catalog-info.yaml
-│   └── mkdocs.yaml
-└── docs
-    └── NEXUS-CHAT-v3.md
+.gitlab-ci.yml
+.hadolint.yaml
+.markdownlint.yaml
+backend/open_webui/config.py
+backend/open_webui/env.py
+backend/open_webui/main.py
+backend/open_webui/retrieval/utils.py
+backend/open_webui/retrieval/web/serpapi.py
+backend/open_webui/routers/configs.py
+backend/open_webui/routers/files.py
+catalog-info.yaml
+docs/NEXUS-CHAT-v3.md
+mkdocs.yml
+src/lib/apis/configs/index.ts
+src/lib/components/admin/Settings/Interface.svelte
+src/lib/components/channel/Navbar.svelte
+src/lib/components/chat/Chat.svelte
+src/lib/components/chat/Messages/Markdown/HTMLToken.svelte
+src/lib/components/chat/Navbar.svelte
+src/lib/components/chat/Settings/Interface.svelte
+src/lib/components/chat/SettingsModal.svelte
+src/lib/stores/index.ts
+src/routes/(app)/notes/+layout.svelte
+src/routes/(app)/notes/+page.svelte
+static/assets/images/Nexus3.0_Backdrop_gradient.png
+static/assets/images/Nexus_Chat.png
+static/assets/images/Nexus_Chat_White.png
+static/assets/images/Synechron_Black_Logo_O.svg
+static/assets/images/Synechron_Yellow_White_Logo_O.svg
 ```
 From the provided file tree and diffs, Nexus Chat v3 customizations touch frontend `src/lib/components`, `routes`, `static/assets/images`, and backend `backend/open_webui` routers and retrieval code. Expect conflicts in these areas.
 

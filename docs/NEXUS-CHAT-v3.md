@@ -79,8 +79,6 @@ origin/open-webui-vX.X.X
 │   │   │   │   ├── Messages
 │   │   │   │   │   ├── Markdown
 │   │   │   │   │   │   ├── HTMLToken.svelte
-│   │   │   │   │   │   ├── Message.svelte
-│   │   │   │   │   │   └── UserMessage.svelte
 │   │   │   │   └── chat
 │   │   │   │       ├── Interface.svelte
 │   │   │   │       ├── Chat.svelte

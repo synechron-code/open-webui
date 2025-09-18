@@ -11,7 +11,6 @@
 	import User from '$lib/components/icons/User.svelte';
 	import UserCircleSolid from '$lib/components/icons/UserCircleSolid.svelte';
 	import GroupModal from './EditGroupModal.svelte';
-	import { querystringValue } from '$lib/utils';
 
 	export let users = [];
 	export let group = {

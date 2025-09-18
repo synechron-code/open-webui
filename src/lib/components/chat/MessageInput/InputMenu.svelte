@@ -128,7 +128,6 @@
 									uploadFilesHandler();
 								}
 							}}
-							title={showAllTools ? $i18n.t('Show Less') : $i18n.t('Show All')}
 						>
 							<Clip />
 

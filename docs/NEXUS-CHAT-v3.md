@@ -12,27 +12,27 @@ Checklist
 
 1) Prepare your local repo
 
- - Move to the Nexus Chat v3 repo root and ensure a clean working tree:
+ - Move to the Nexus Chat v3 repo root and `origin/nexus-chat-v3` release branch:
 
 ```bash
-git status --porcelain
-git add -A && git commit -m "WIP: save local changes"   # or stash
-git stash push -m "wip before upstream merge"         # if you prefer stashing
+git checkout origin/nexus-chat-v3
 ```
 
- - Add the upstream Open WebUI remote if it's not already present. Replace URL with the canonical upstream remote:
+ - Ensure the upstream Open WebUI remote is syncrhonized and latest tag is available. Nexus Chat v3 should already have the Open WebUI upstream branches and tags from the synchronization with github repo under the `origin` remote).
 
 ```bash
-git remote add upstream https://github.com/open-webui/open-webui.git
-git fetch upstream --tags
+git fetch origin --tags
+git tag | grep <tag>
 ```
+
+Replace `<tag>` with the upstream release tag or branch name (for example `v0.6.26`).
 
 2) Create a merge branch
 
-Create an isolated branch where you perform the merge so the main branch stays stable:
+Create an isolated branch from the `origin/nexus-chat-v3` release branch where you perform the merge so the main branch stays stable:
 
 ```bash
-git checkout -b merge/upstream-<tag>-into-nexuschat-v3
+git checkout -b merge/nexus-chat-v3-<tag>
 ```
 
 Replace `<tag>` with the upstream release tag or branch name (for example `v0.6.26`).
@@ -42,13 +42,15 @@ Replace `<tag>` with the upstream release tag or branch name (for example `v0.6.
 There are two common strategies: merging the upstream branch directly or using `git rebase` (careful: rebasing rewritten history on a public branch can be disruptive). The merge strategy is safer for collaborative projects.
 
 ```bash
-git fetch upstream
-git merge --no-ff upstream/<branch-or-tag> -m "Merge upstream/<branch-or-tag> into nexuschat-v3"
+git fetch origin
+git merge --no-ff origin/<branch-or-tag> -m "Merge origin/<branch-or-tag> into nexus-chat-v3"
 ```
 
 If the merge completes without conflicts, skip to verification. If there are conflicts, Git will stop and mark conflicted files.
 
 4) Resolve conflicts (practical tips for this repo)
+
+Often there are many conflicts in files that have not been customized for Nexus Chat v3. For files not in the list below, you can just accept all incoming changes.
 
 Files with Changes or Additions in Nexus Chat v3:
 ```
@@ -144,28 +146,12 @@ git reset --merge
 
 5) Verify locally (quality gates)
 
-- Frontend
-	- Install deps and run the build for the UI part that Nexus Chat uses (project root or `nexuschat` frontend):
+- Build and run docker containers
 
 ```bash
-# example - run from repo root or nexuschat folder if applicable
-npm ci
-npm run build
-npm run dev     # smoke test in browser if needed
+cd nexuschat-build
+./build-and-run.sh
 ```
-
-- Backend
-	- Create a virtualenv, install requirements, and run quick tests or start the server to confirm endpoints:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pytest -q   # minimal test run if tests exist
-```
-
-- Lint & formatting
-	- Run any configured linters (eslint, ruff, mypy) and address failures.
 
 6) Create a Pull Request (or push the merge branch)
 
@@ -173,7 +159,7 @@ Push the merge branch and open a PR for the change so teammates and CI can valid
 
 ```bash
 git push origin HEAD
-# then open PR from merge/upstream-... into your `main` or `release` branch
+# then open PR from merge/nexus-chat-v3-<tag> into the `nexus-chat-v3` release branch
 ```
 
 7) Rollback and emergency fixes
@@ -198,39 +184,4 @@ git reset --hard <sha-before-merge>
 git push --force-with-lease origin main
 ```
 
-8) Automation and long-term maintenance
-
-- Keep an `upstream` remote configured and periodically fetch and create merge branches for new upstream releases.
-- Consider a small merge helper script that:
-	- fetches upstream
-	- creates the merge branch
-	- runs build/test steps automatically
-	- opens a draft PR using GitHub CLI or GitHub API
-
-Example quick script (bash) idea (not added to repo here):
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-TAG="$1" # e.g. v0.6.26
-git fetch upstream
-BRANCH="merge/upstream-${TAG}-into-nexuschat-v3"
-git checkout -b "$BRANCH"
-git merge --no-ff "upstream/${TAG}"
-# run build/test commands here and exit non-zero on failure
-```
-
-9) Acceptance checklist before merging to production branch
-
-- All conflicts resolved and code compiles
-- Frontend smoke-tested in a browser
-- Backend endpoints respond correctly in a local run
-- Linters and tests pass or have an approved exception
-- PR reviewed by a teammate and CI green
-
-Notes and assumptions
-- This guide assumes `upstream` is the canonical Open WebUI remote. Replace remote/branch names as appropriate for your workflow.
-- When in doubt, prefer the Nexus Chat brand and functionality for UX or brand assets, and prefer upstream fixes for security and platform-level bugs. Document each such decision in the PR description for future audits.
-
-If you want, I can add a small helper script in `nexuschat/scripts/` and a checklist template for PR descriptions to speed the process—tell me if you want that and I'll add it.
 

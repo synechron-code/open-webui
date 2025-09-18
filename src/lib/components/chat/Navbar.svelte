@@ -55,10 +55,6 @@
 	export let archiveChatHandler: (id: string) => void;
 	export let moveChatHandler: (id: string, folderId: string) => void;
 
-	export let onSaveTempChat: () => {};
-	export let archiveChatHandler: (id: string) => void;
-	export let moveChatHandler: (id: string, folderId: string) => void;
-
 	let closedBannerIds = [];
 
 	let showShareChatModal = false;
@@ -292,8 +288,6 @@
 			</div>
 		</div>
 	</div>
-
-
 
 	{#if $temporaryChatEnabled && $chatId === 'local'}
 		<div class=" w-full z-30 text-center">

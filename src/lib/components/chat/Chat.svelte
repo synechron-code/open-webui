@@ -2303,9 +2303,6 @@
 					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
 				/>
 
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				/>
 			{:else if $settings?.backgroundImageUrl ?? backgroundImage ?? null}
 				<div
 					class="absolute {$showSidebar
@@ -2314,7 +2311,8 @@
 					style="background-image: url({$settings?.backgroundImageUrl ??
 						backgroundImage})  "
 				/>
-
+            {/if}
+			
             {#if $config?.enable_background_fade}
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"

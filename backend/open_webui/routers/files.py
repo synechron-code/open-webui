@@ -140,27 +140,6 @@ def upload_file(
     process: bool = Query(True),
     process_in_background: bool = Query(True),
     user=Depends(get_verified_user),
-    background_tasks: Optional[BackgroundTasks] = None,
-):
-    return upload_file_handler(
-        request,
-        file=file,
-        metadata=metadata,
-        process=process,
-        process_in_background=process_in_background,
-        user=user,
-        background_tasks=background_tasks,
-    )
-
-
-def upload_file_handler(
-    request: Request,
-    file: UploadFile = File(...),
-    metadata: Optional[dict | str] = Form(None),
-    process: bool = Query(True),
-    process_in_background: bool = Query(True),
-    user=Depends(get_verified_user),
-    background_tasks: Optional[BackgroundTasks] = None,
 ):
     return upload_file_handler(
         request,

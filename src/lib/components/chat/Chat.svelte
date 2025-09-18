@@ -38,7 +38,10 @@
 		toolServers,
 		functions,
 		selectedFolder,
-		pinnedChats
+		pinnedChats,
+		// START Synechron Customization
+        isDarkMode,	
+		// END Synechron Customization
 	} from '$lib/stores';
 	import {
 		convertMessagesToHistory,
@@ -72,7 +75,6 @@
 		getTaskIdsByChatId
 	} from '$lib/apis';
 	import { getTools } from '$lib/apis/tools';
-	import { uploadFile } from '$lib/apis/files';
 	import { createOpenAITextStream } from '$lib/apis/streaming';
 
 	import { fade } from 'svelte/transition';
@@ -90,6 +92,7 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import { getFunctions } from '$lib/apis/functions';
 	import Image from '../common/Image.svelte';
+	import { uploadFile } from '$lib/apis/files';
 
 	export let chatIdProp = '';
 
@@ -496,6 +499,18 @@
 		}
 	};
 
+    ///////////////////////////////////////////////
+    // Synechron Customization for background image
+    ///////////////////////////////////////////////
+    let backgroundImage: string = "";
+
+    // Reactive statement to update backgroundImage based on conditions
+    $: {
+        const darkMode = $isDarkMode; // Access the value of isDarkMode
+        backgroundImage = darkMode ? $config.chat_background_dark_image : $config.chat_background_image;
+    };
+    // End of Synechron Customization
+
 	let pageSubscribe = null;
 	onMount(async () => {
 		loading = true;
@@ -569,6 +584,23 @@
 		chatInput?.focus();
 
 		chats.subscribe(() => {});
+
+        ///////////////////////////////////////////////
+        // Synechron Customization for background image
+        ///////////////////////////////////////////////
+        const updateDarkMode = () => {
+            isDarkMode.set(document.documentElement.classList.contains('dark'));
+        };
+
+        // Initial check
+        updateDarkMode();
+
+        // Observe changes to the class attribute
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+        // End of Synechron Customization
 	});
 
 	onDestroy(() => {
@@ -2271,22 +2303,21 @@
 					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
 				/>
 
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				/>
-			{:else if $settings?.backgroundImageUrl ?? $config?.license_metadata?.background_image_url ?? null}
+			{:else if $settings?.backgroundImageUrl ?? backgroundImage ?? null}
 				<div
 					class="absolute {$showSidebar
 						? 'md:max-w-[calc(100%-260px)] md:translate-x-[260px]'
 						: ''} top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
 					style="background-image: url({$settings?.backgroundImageUrl ??
-						$config?.license_metadata?.background_image_url})  "
+						backgroundImage})  "
 				/>
-
+            {/if}
+			
+            {#if $config?.enable_background_fade}
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
 				/>
-			{/if}
+            {/if}
 
 			<PaneGroup direction="horizontal" class="w-full h-full">
 				<Pane defaultSize={50} minSize={30} class="h-full flex relative max-w-full flex-col">

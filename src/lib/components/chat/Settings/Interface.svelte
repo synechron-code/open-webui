@@ -90,8 +90,11 @@
 
 	let webSearch = null;
 
-	let iframeSandboxAllowSameOrigin = false;
-	let iframeSandboxAllowForms = false;
+	
+	// START Synechron Customization
+	let iframeSandboxAllowSameOrigin = true;
+	let iframeSandboxAllowForms = true;	
+	// END Synechron Customization
 
 	let showManageFloatingActionButtonsModal = false;
 	let showManageImageCompressionModal = false;
@@ -228,8 +231,8 @@
 		notificationSound = $settings?.notificationSound ?? true;
 		notificationSoundAlways = $settings?.notificationSoundAlways ?? false;
 
-		iframeSandboxAllowSameOrigin = $settings?.iframeSandboxAllowSameOrigin ?? false;
-		iframeSandboxAllowForms = $settings?.iframeSandboxAllowForms ?? false;
+		iframeSandboxAllowSameOrigin = $settings?.iframeSandboxAllowSameOrigin ?? true;
+		iframeSandboxAllowForms = $settings?.iframeSandboxAllowForms ?? true;
 
 		stylizedPdfExport = $settings?.stylizedPdfExport ?? true;
 

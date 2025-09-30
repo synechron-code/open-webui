@@ -39,8 +39,9 @@
 		functions,
 		selectedFolder,
 		pinnedChats,
+		showEmbeds,
 		// START Synechron Customization
-        isDarkMode,	
+        isDarkMode
 		// END Synechron Customization
 	} from '$lib/stores';
 	import {
@@ -75,6 +76,7 @@
 		getTaskIdsByChatId
 	} from '$lib/apis';
 	import { getTools } from '$lib/apis/tools';
+	import { uploadFile } from '$lib/apis/files';
 	import { createOpenAITextStream } from '$lib/apis/streaming';
 
 	import { fade } from 'svelte/transition';
@@ -92,7 +94,6 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import { getFunctions } from '$lib/apis/functions';
 	import Image from '../common/Image.svelte';
-	import { uploadFile } from '$lib/apis/files';
 
 	export let chatIdProp = '';
 
@@ -365,6 +366,8 @@
 					message.content = data.content;
 				} else if (type === 'chat:message:files' || type === 'files') {
 					message.files = data.files;
+				} else if (type === 'chat:message:embeds' || type === 'embeds') {
+					message.embeds = data.embeds;
 				} else if (type === 'chat:message:error') {
 					message.error = data.error;
 				} else if (type === 'chat:message:follow_ups') {
@@ -468,6 +471,15 @@
 			return;
 		}
 
+		if (event.data.type === 'action:submit') {
+			console.debug(event.data.text);
+
+			if (prompt !== '') {
+				await tick();
+				submitPrompt(prompt);
+			}
+		}
+
 		// Replace with your iframe's origin
 		if (event.data.type === 'input:prompt') {
 			console.debug(event.data.text);
@@ -477,15 +489,6 @@
 			if (inputElement) {
 				messageInput?.setText(event.data.text);
 				inputElement.focus();
-			}
-		}
-
-		if (event.data.type === 'action:submit') {
-			console.debug(event.data.text);
-
-			if (prompt !== '') {
-				await tick();
-				submitPrompt(prompt);
 			}
 		}
 
@@ -577,6 +580,7 @@
 				showCallOverlay.set(false);
 				showOverview.set(false);
 				showArtifacts.set(false);
+				showEmbeds.set(false);
 			}
 		});
 
@@ -1526,7 +1530,9 @@
 		const _files = JSON.parse(JSON.stringify(files));
 
 		chatFiles.push(
-			..._files.filter((item) => ['doc', 'text', 'file', 'collection'].includes(item.type))
+			..._files.filter((item) =>
+				['doc', 'text', 'file', 'note', 'chat', 'collection'].includes(item.type)
+			)
 		);
 		chatFiles = chatFiles.filter(
 			// Remove duplicates
@@ -2260,7 +2266,7 @@
 
 <svelte:head>
 	<title>
-		{$chatTitle
+		{$settings.showChatTitleInTab !== false && $chatTitle
 			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} • ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}
 	</title>
@@ -2296,6 +2302,17 @@
 	{#if !loading}
 		<div in:fade={{ duration: 50 }} class="w-full h-full flex flex-col">
 			{#if $selectedFolder && $selectedFolder?.meta?.background_image_url}
+				<div
+					class="absolute {$showSidebar
+						? 'md:max-w-[calc(100%-260px)] md:translate-x-[260px]'
+						: ''} top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
+					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
+				/>
+
+				<div
+					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
+				/>
+			{:else if $settings?.backgroundImageUrl ?? $config?.license_metadata?.background_image_url ?? null}
 				<div
 					class="absolute {$showSidebar
 						? 'md:max-w-[calc(100%-260px)] md:translate-x-[260px]'

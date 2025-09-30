@@ -140,7 +140,6 @@ def upload_file(
     process: bool = Query(True),
     process_in_background: bool = Query(True),
     user=Depends(get_verified_user),
-    background_tasks: Optional[BackgroundTasks] = None,
 ):
     return upload_file_handler(
         request,

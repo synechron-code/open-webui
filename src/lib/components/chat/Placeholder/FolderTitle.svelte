@@ -97,25 +97,6 @@
 		}
 	};
 
-	const updateIconHandler = async (iconName) => {
-		const res = await updateFolderById(localStorage.token, folder.id, {
-			meta: {
-				icon: iconName
-			}
-		}).catch((error) => {
-			toast.error(`${error}`);
-			return null;
-		});
-
-		if (res) {
-			folder.meta = { ...folder.meta, icon: iconName };
-
-			toast.success($i18n.t('Folder updated successfully'));
-			selectedFolder.set(folder);
-			onUpdate(folder);
-		}
-	};
-
 	const deleteHandler = async () => {
 		const res = await deleteFolderById(localStorage.token, folder.id).catch((error) => {
 			toast.error(`${error}`);

@@ -286,22 +286,20 @@ class Tools:
 				</div>
 
 				<div class="mb-2 flex-1 overflow-auto h-0 rounded-lg">
-					{#await import('$lib/components/common/CodeEditor.svelte') then { default: CodeEditor }}
-						<CodeEditor
-							bind:this={codeEditor}
-							value={content}
-							lang="python"
-							{boilerplate}
-							onChange={(e) => {
-								_content = e;
-							}}
-							onSave={async () => {
-								if (formElement) {
-									formElement.requestSubmit();
-								}
-							}}
-						/>
-					{/await}
+					<CodeEditor
+						bind:this={codeEditor}
+						value={content}
+						lang="python"
+						{boilerplate}
+						onChange={(e) => {
+							_content = e;
+						}}
+						onSave={async () => {
+							if (formElement) {
+								formElement.requestSubmit();
+							}
+						}}
+					/>
 				</div>
 
 				<div class="pb-3 flex justify-between">

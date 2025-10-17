@@ -5,7 +5,9 @@ nav:
   - Nexus Chat v3:
     - Overview & Merge Guide: NEXUS-CHAT-v3.md
     - Customizations Reference: nexus-chat-v3-customizations-reference.md
+    - v0.6.34 Merge Phase 1 Report: merge-v0.6.34-phase1-report.md
     - v0.6.34 Merge Phase 2 Report: merge-v0.6.34-phase2-report.md
+    - v0.6.34 Merge Phase 3 Report: merge-v0.6.34-phase3-report.md
     - Full Diff vs Upstream v0.6.34: nexus-chat-v3-vs-upstream-v0.6.34.diff
   - OpenWebUI Docs:
     - Apache: apache.md

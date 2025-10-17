@@ -2,7 +2,11 @@ site_name: nexus-chat-v3
 site_description: Nexus Chat is a modern, feature-rich and highly customizable AI chat platform based on the open source project Open WebUI.
 docs_dir: docs
 nav:
-  - Nexus Chat v3 Customizations and Merge: NEXUS_CHAT_V3.md
+  - Nexus Chat v3:
+    - Overview & Merge Guide: NEXUS-CHAT-v3.md
+    - Customizations Reference: nexus-chat-v3-customizations-reference.md
+    - v0.6.34 Merge Phase 2 Report: merge-v0.6.34-phase2-report.md
+    - Full Diff vs Upstream v0.6.34: nexus-chat-v3-vs-upstream-v0.6.34.diff
   - OpenWebUI Docs:
     - Apache: apache.md
     - Contribution: CONTRIBUTING.md

@@ -125,13 +125,6 @@
 				});
 			}
 		}
-
-		await tick();
-		for (const folderId in folders) {
-			if (folders[folderId] && folders[folderId].is_expanded) {
-				folderRegistry[folderId]?.setFolderItems();
-			}
-		}
 	};
 
 	const createFolder = async ({ name, data }) => {

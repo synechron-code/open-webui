@@ -70,9 +70,30 @@ or
 ```
 
 Often there are many conflicts in files that have not been customized for Nexus Chat v3. For files not in the list below, you can just accept all incoming changes. A helper script is provided called accept-incoming-except.sh which takes a file name argument for a file containing a list of files customized for Nexus Chat v3 which must have merge conflicts resolved manually. All other files will have merge conflicts resolved by accepting the incoming changes.
-```
+
+Basic usage:
+```bash
 ./accept-incoming-except.sh nexus-chat-v3-customized-files.txt
 ```
+
+The script supports optional flags for enhanced reporting:
+```bash
+# Suppress per-file output, show only summary
+./accept-incoming-except.sh --quiet nexus-chat-v3-customized-files.txt
+
+# Write remaining conflicts to a file for documentation
+./accept-incoming-except.sh --remaining-out docs/merge-v0.6.34-phase1-remaining.txt nexus-chat-v3-customized-files.txt
+
+# Combine flags
+./accept-incoming-except.sh --quiet --remaining-out docs/remaining.txt nexus-chat-v3-customized-files.txt
+```
+
+The script will produce a summary showing:
+- Total conflicts found
+- Number auto-resolved by accepting incoming changes
+- Number kept for manual resolution
+- Any warnings (files that couldn't be auto-resolved)
+- Final count of remaining conflicts
 
 Files with Changes or Additions in Nexus Chat v3:
 ```

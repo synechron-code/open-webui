@@ -250,9 +250,11 @@ type Config = {
 	name: string;
 	version: string;
 	default_locale: string;
+	// START Synechron Customization
 	default_background_image: string;
 	chat_background_image: string;
     enable_background_fade: boolean;
+	// END Synechron Customization
 	default_models: string;
 	default_prompt_suggestions: PromptSuggestion[];
 	features: {

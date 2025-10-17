@@ -39,7 +39,6 @@
 		functions,
 		selectedFolder,
 		pinnedChats,
-
 		showEmbeds,
 		// START Synechron Customization
         isDarkMode

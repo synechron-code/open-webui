@@ -976,7 +976,6 @@
 					chevron={false}
 					on:change={async (e) => {
 						selectedFolder.set(null);
-						await goto('/');
 					}}
 					on:import={(e) => {
 						importChatHandler(e.detail);

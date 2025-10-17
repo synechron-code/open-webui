@@ -39,10 +39,13 @@
 		functions,
 		selectedFolder,
 		pinnedChats,
+
 		showEmbeds,
 		// START Synechron Customization
         isDarkMode
 		// END Synechron Customization
+
+
 	} from '$lib/stores';
 	import {
 		convertMessagesToHistory,
@@ -508,6 +511,7 @@
 		}
 	};
 
+
     ///////////////////////////////////////////////
     // Synechron Customization for background image
     ///////////////////////////////////////////////
@@ -519,6 +523,8 @@
         backgroundImage = darkMode ? $config.chat_background_dark_image : $config.chat_background_image;
     };
     // End of Synechron Customization
+
+
 
 	const savedModelIds = async () => {
 		if (
@@ -625,6 +631,7 @@
 		const chatInput = document.getElementById('chat-input');
 		chatInput?.focus();
 
+
 		chats.subscribe(() => {});
 
         ///////////////////////////////////////////////
@@ -643,6 +650,8 @@
 
         return () => observer.disconnect();
         // End of Synechron Customization
+
+
 	});
 
 	onDestroy(() => {
@@ -2358,18 +2367,6 @@
 						: ''} top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
 					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
 				/>
-
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				/>
-			{:else if $settings?.backgroundImageUrl ?? $config?.license_metadata?.background_image_url ?? null}
-				<div
-					class="absolute {$showSidebar
-						? 'md:max-w-[calc(100%-260px)] md:translate-x-[260px]'
-						: ''} top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
-					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
-				/>
-
 			{:else if $settings?.backgroundImageUrl ?? backgroundImage ?? null}
 				<div
 					class="absolute {$showSidebar

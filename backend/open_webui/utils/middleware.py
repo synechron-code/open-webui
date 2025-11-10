@@ -1325,6 +1325,12 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                     auth_type = mcp_server_connection.get("auth_type", "")
 
                     headers = {}
+                    # Add custom headers if provided
+                    custom_headers = mcp_server_connection.get("headers", {})
+                    if isinstance(custom_headers, dict):
+                        headers.update(custom_headers)
+
+                    # Authorization header from auth takes precedence over custom headers
                     if auth_type == "bearer":
                         headers["Authorization"] = (
                             f"Bearer {mcp_server_connection.get('key', '')}"

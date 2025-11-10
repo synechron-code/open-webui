@@ -44,6 +44,7 @@
 
 	let auth_type = 'bearer';
 	let key = '';
+	let headers: { key: string; value: string }[] = [];
 
 	let accessControl = {};
 
@@ -123,12 +124,21 @@
 				console.debug('Connection successful', res);
 			}
 		} else {
+			// Convert headers array to object
+			const headersObj = {};
+			headers.forEach((h) => {
+				if (h.key && h.value) {
+					headersObj[h.key] = h.value;
+				}
+			});
+
 			const res = await verifyToolServerConnection(localStorage.token, {
 				url,
 				path,
 				type,
 				auth_type,
 				key,
+				headers: Object.keys(headersObj).length > 0 ? headersObj : undefined,
 				config: {
 					enable: enable,
 					access_control: accessControl
@@ -179,6 +189,14 @@
 				if (data.auth_type) auth_type = data.auth_type;
 				if (data.key) key = data.key;
 
+				// Import custom headers
+				if (data.headers && typeof data.headers === 'object') {
+					headers = Object.entries(data.headers).map(([key, value]) => ({
+						key,
+						value: String(value)
+					}));
+				}
+
 				if (data.info) {
 					id = data.info.id ?? '';
 					name = data.info.name ?? '';
@@ -200,6 +218,14 @@
 
 	const exportHandler = async () => {
 		// export current connection as json file
+		// Convert headers array to object
+		const headersObj = {};
+		headers.forEach((h) => {
+			if (h.key && h.value) {
+				headersObj[h.key] = h.value;
+			}
+		});
+
 		const json = JSON.stringify([
 			{
 				type,
@@ -211,6 +237,7 @@
 
 				auth_type,
 				key,
+				...(Object.keys(headersObj).length > 0 ? { headers: headersObj } : {}),
 
 				info: {
 					id: id,
@@ -256,6 +283,14 @@
 			}
 		}
 
+		// Convert headers array to object
+		const headersObj = {};
+		headers.forEach((h) => {
+			if (h.key && h.value) {
+				headersObj[h.key] = h.value;
+			}
+		});
+
 		const connection = {
 			type,
 			url,
@@ -266,6 +301,7 @@
 
 			auth_type,
 			key,
+			...(Object.keys(headersObj).length > 0 ? { headers: headersObj } : {}),
 			config: {
 				enable: enable,
 				access_control: accessControl
@@ -293,6 +329,7 @@
 
 		key = '';
 		auth_type = 'bearer';
+		headers = [];
 
 		id = '';
 		name = '';
@@ -314,6 +351,16 @@
 
 			auth_type = connection?.auth_type ?? 'bearer';
 			key = connection?.key ?? '';
+
+			// Initialize custom headers from connection
+			if (connection?.headers && typeof connection.headers === 'object') {
+				headers = Object.entries(connection.headers).map(([key, value]) => ({
+					key,
+					value: String(value)
+				}));
+			} else {
+				headers = [];
+			}
 
 			id = connection.info?.id ?? '';
 			name = connection.info?.name ?? '';
@@ -655,6 +702,73 @@
 								</div>
 							</div>
 						</div>
+
+						{#if type === 'mcp'}
+							<div class="flex gap-2 mt-2">
+								<div class="flex flex-col w-full">
+									<div class="flex justify-between items-center mb-0.5">
+										<div class="flex gap-2 items-center">
+											<div
+												class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+											>
+												{$i18n.t('Custom Headers')}
+											</div>
+										</div>
+										<Tooltip content={$i18n.t('Add Header')}>
+											<button
+												type="button"
+												class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition"
+												on:click={() => {
+													headers = [...headers, { key: '', value: '' }];
+												}}
+												aria-label={$i18n.t('Add Header')}
+											>
+												<Plus className="size-4" />
+											</button>
+										</Tooltip>
+									</div>
+
+									{#if headers.length > 0}
+										<div class="flex flex-col gap-2">
+											{#each headers as header, index}
+												<div class="flex gap-2 items-center">
+													<input
+														class={`flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+														type="text"
+														bind:value={header.key}
+														placeholder={$i18n.t('Header Name')}
+														autocomplete="off"
+													/>
+													<input
+														class={`flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+														type="text"
+														bind:value={header.value}
+														placeholder={$i18n.t('Header Value')}
+														autocomplete="off"
+													/>
+													<button
+														type="button"
+														class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition"
+														on:click={() => {
+															headers = headers.filter((_, i) => i !== index);
+														}}
+														aria-label={$i18n.t('Remove Header')}
+													>
+														<Minus className="size-4" />
+													</button>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<div
+											class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+										>
+											{$i18n.t('No custom headers configured')}
+										</div>
+									{/if}
+								</div>
+							</div>
+						{/if}
 
 						{#if !direct}
 							<hr class=" border-gray-100 dark:border-gray-700/10 my-2.5 w-full" />

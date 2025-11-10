@@ -262,7 +262,12 @@ async def verify_tool_servers_config(
             else:
                 try:
                     client = MCPClient()
-                    headers = None
+                    headers = {}
+
+                    # Add custom headers if provided
+                    custom_headers = getattr(form_data, "headers", None) or {}
+                    if isinstance(custom_headers, dict):
+                        headers.update(custom_headers)
 
                     token = None
                     if form_data.auth_type == "bearer":
@@ -279,10 +284,11 @@ async def verify_tool_servers_config(
                         except Exception as e:
                             pass
 
+                    # Authorization header from auth takes precedence over custom headers
                     if token:
-                        headers = {"Authorization": f"Bearer {token}"}
+                        headers["Authorization"] = f"Bearer {token}"
 
-                    await client.connect(form_data.url, headers=headers)
+                    await client.connect(form_data.url, headers=headers if headers else None)
                     specs = await client.list_tool_specs()
                     return {
                         "status": True,

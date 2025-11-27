@@ -13,6 +13,10 @@
 	const addTagHandler = async () => {
 		tagName = tagName.trim();
 		if (tagName !== '') {
+			if (tagName.startsWith('%')) {
+				toast.error($i18n.t(`Tag names cannot start with '%'`));
+				return;
+			}
 			dispatch('add', tagName);
 			tagName = '';
 			showTagInput = false;

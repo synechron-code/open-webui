@@ -871,6 +871,12 @@ async def add_tag_by_id_and_tag_name(
                 detail=ERROR_MESSAGES.DEFAULT("Tag name cannot be 'None'"),
             )
 
+        if form_data.name.startswith("%"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=ERROR_MESSAGES.DEFAULT("Tag names cannot start with '%'"),
+            )
+
         if tag_id not in tags:
             Chats.add_chat_tag_by_id_and_user_id_and_tag_name(
                 id, user.id, form_data.name

@@ -32,6 +32,12 @@ from open_webui.env import (
     WEBUI_FAVICON_URL,
     WEBUI_NAME,
     log,
+    DEFAULT_BACKGROUND_IMAGE,
+    DEFAULT_BACKGROUND_DARK_IMAGE,
+    DEFAULT_LOGO_IMAGE,
+    DEFAULT_LOGO_SMALL_IMAGE,
+    DEFAULT_LOGO_DARK_IMAGE,
+    DEFAULT_LOGO_SMALL_DARK_IMAGE,
 )
 from open_webui.internal.db import Base, get_db
 from open_webui.utils.redis import get_redis_connection

@@ -90,9 +90,10 @@ export const showOverview = writable(false);
 export const showArtifacts = writable(false);
 export const showCallOverlay = writable(false);
 
-export const embed = writable(null);
 export const artifactCode = writable(null);
 export const artifactContents = writable(null);
+
+export const embed = writable(null);
 
 export const temporaryChatEnabled = writable(false);
 export const scrollPaginationEnabled = writable(false);
@@ -282,9 +283,11 @@ type Config = {
 		enable_admin_export: boolean;
 		enable_admin_chat_access: boolean;
 		enable_community_sharing: boolean;
+		enable_memories: boolean;
 		enable_autocomplete_generation: boolean;
 		enable_direct_connections: boolean;
 		enable_version_update_check: boolean;
+		folder_max_file_count?: number;
 	};
 	oauth: {
 		providers: {
@@ -293,7 +296,7 @@ type Config = {
 	};
 	ui?: {
 		pending_user_overlay_title?: string;
-		pending_user_overlay_description?: string;
+		pending_user_overlay_content?: string;
 	};
 };
 

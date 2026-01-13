@@ -445,6 +445,15 @@ from open_webui.config import (
     QUERY_GENERATION_PROMPT_TEMPLATE,
     AUTOCOMPLETE_GENERATION_PROMPT_TEMPLATE,
     AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH,
+    # START Synechron Customization
+    CHAT_BACKGROUND_IMAGE,
+    CHAT_BACKGROUND_DARK_IMAGE,
+    LOGO_IMAGE,
+    LOGO_SMALL_IMAGE,
+    LOGO_DARK_IMAGE,
+    LOGO_SMALL_DARK_IMAGE,
+    ENABLE_BACKGROUND_FADE,
+    # END Synechron Customization
     AppConfig,
     reset_config,
 )
@@ -1922,6 +1931,19 @@ async def get_app_config(request: Request):
         "name": app.state.WEBUI_NAME,
         "version": VERSION,
         "default_locale": str(DEFAULT_LOCALE),
+        "default_background_image": str(DEFAULT_BACKGROUND_IMAGE),
+        "default_background_dark_image": str(DEFAULT_BACKGROUND_DARK_IMAGE),
+        "chat_background_image": app.state.config.CHAT_BACKGROUND_IMAGE,
+        "chat_background_dark_image": app.state.config.CHAT_BACKGROUND_DARK_IMAGE,
+        "enable_background_fade": app.state.config.ENABLE_BACKGROUND_FADE,
+        "default_logo_image": str(DEFAULT_LOGO_IMAGE),
+        "default_logo_small_image": str(DEFAULT_LOGO_SMALL_IMAGE),
+        "default_logo_dark_image": str(DEFAULT_LOGO_DARK_IMAGE),
+        "default_logo_small_dark_image": str(DEFAULT_LOGO_SMALL_DARK_IMAGE),
+        "logo_image": app.state.config.LOGO_IMAGE,
+        "logo_small_image": app.state.config.LOGO_SMALL_IMAGE,
+        "logo_dark_image": app.state.config.LOGO_DARK_IMAGE,
+        "logo_small_dark_image": app.state.config.LOGO_SMALL_DARK_IMAGE,
         "oauth": {
             "providers": {
                 name: config.get("name", name)
@@ -2365,119 +2387,6 @@ async def get_manifest_json():
                 "params": {"text": "shared"},
             },
         }
-
-
-
-# LOGO - Synechron Customization
-#
-########################################
-app.state.config.CHAT_BACKGROUND_IMAGE = CHAT_BACKGROUND_IMAGE
-app.state.config.CHAT_BACKGROUND_DARK_IMAGE = CHAT_BACKGROUND_DARK_IMAGE
-app.state.config.LOGO_IMAGE = LOGO_IMAGE
-app.state.config.LOGO_SMALL_IMAGE = LOGO_SMALL_IMAGE
-app.state.config.LOGO_DARK_IMAGE = LOGO_DARK_IMAGE
-app.state.config.LOGO_SMALL_DARK_IMAGE = LOGO_SMALL_DARK_IMAGE
-app.state.config.ENABLE_BACKGROUND_FADE = ENABLE_BACKGROUND_FADE
-
-########################################
-#
-# WEBUI
-#
-########################################
-
-app.state.MODELS = {}
-
-# Add the middleware to the app
-if ENABLE_COMPRESSION_MIDDLEWARE:
-    app.add_middleware(CompressMiddleware)
-
-
-class RedirectMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Check if the request is a GET request
-        if request.method == "GET":
-            path = request.url.path
-            query_params = dict(parse_qs(urlparse(str(request.url)).query))
-
-            redirect_params = {}
-
-            # Check for the specific watch path and the presence of 'v' parameter
-            if path.endswith("/watch") and "v" in query_params:
-                # Extract the first 'v' parameter
-                youtube_video_id = query_params["v"][0]
-                redirect_params["youtube"] = youtube_video_id
-
-            if "shared" in query_params and len(query_params["shared"]) > 0:
-                # PWA share_target support
-
-                text = query_params["shared"][0]
-                if text:
-                    urls = re.match(r"https://\S+", text)
-                    if urls:
-                        from open_webui.retrieval.loaders.youtube import _parse_video_id
-
-                        if youtube_video_id := _parse_video_id(urls[0]):
-                            redirect_params["youtube"] = youtube_video_id
-                        else:
-                            redirect_params["load-url"] = urls[0]
-                    else:
-                        redirect_params["q"] = text
-
-            if redirect_params:
-                redirect_url = f"/?{urlencode(redirect_params)}"
-                return RedirectResponse(url=redirect_url)
-
-        # Proceed with the normal flow of other requests
-        response = await call_next(request)
-        return response
-
-
-app.add_middleware(RedirectMiddleware)
-app.add_middleware(SecurityHeadersMiddleware)
-
-
-class APIKeyRestrictionMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        auth_header = request.headers.get("Authorization")
-        token = None
-
-        if auth_header:
-            scheme, token = auth_header.split(" ")
-
-        # Only apply restrictions if an sk- API key is used
-        if token and token.startswith("sk-"):
-            # Check if restrictions are enabled
-            if request.app.state.config.ENABLE_API_KEYS_ENDPOINT_RESTRICTIONS:
-                allowed_paths = [
-                    path.strip()
-                    for path in str(
-                        request.app.state.config.API_KEYS_ALLOWED_ENDPOINTS
-                    ).split(",")
-                    if path.strip()
-                ]
-
-                request_path = request.url.path
-
-                # Match exact path or prefix path
-                is_allowed = any(
-                    request_path == allowed or request_path.startswith(allowed + "/")
-                    for allowed in allowed_paths
-                )
-
-                if not is_allowed:
-                    return JSONResponse(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        content={
-                            "detail": "API key not allowed to access this endpoint."
-                        },
-                    )
-
-        response = await call_next(request)
-        return response
-
-
-app.add_middleware(APIKeyRestrictionMiddleware)
-
 
 
 @app.get("/opensearch.xml")

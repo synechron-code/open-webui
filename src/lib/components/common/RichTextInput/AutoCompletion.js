@@ -13,14 +13,13 @@ Intelligently reset suggestions on new input.
 
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
 
 export const AIAutocompletion = Extension.create({
 	name: 'aiAutocompletion',
 
 	addOptions() {
 		return {
-			generateCompletion: (prompt: string) => Promise.resolve(''),
+			generateCompletion: () => Promise.resolve(''),
 			debounceTime: 1000
 		};
 	},
@@ -60,7 +59,7 @@ export const AIAutocompletion = Extension.create({
 	},
 
 	addProseMirrorPlugins() {
-		let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+		let debounceTimer = null;
 		let loading = false;
 
 		let touchStartX = 0;
@@ -68,7 +67,7 @@ export const AIAutocompletion = Extension.create({
 
 		let isComposing = false;
 
-		const handleAICompletion = (view: EditorView) => {
+		const handleAICompletion = (view) => {
 			const { state, dispatch } = view;
 			const { selection } = state;
 			const { $head } = selection;
@@ -103,7 +102,7 @@ export const AIAutocompletion = Extension.create({
 								loading = true;
 								this.options
 									.generateCompletion(prompt)
-									.then((suggestion: string) => {
+									.then((suggestion) => {
 										if (suggestion && suggestion.trim() !== '') {
 											if (view.state.selection.$head.pos === view.state.selection.$head.end()) {
 												if (view.state === newState) {

@@ -468,14 +468,6 @@
 		}
 	};
 
-	const cancelUpdateModelHandler = async (model: string) => {
-		const controller = updateModelsControllers[model];
-		if (controller) {
-			controller.abort();
-			updateCancelled = true;
-		}
-	};
-
 	const cancelModelPullHandler = async (model: string) => {
 		const { reader, abortController } = $MODEL_DOWNLOAD_POOL[model];
 		if (abortController) {

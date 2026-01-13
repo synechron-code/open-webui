@@ -1,0 +1,15 @@
+backend/open_webui/config.py
+backend/open_webui/env.py
+backend/open_webui/main.py
+backend/open_webui/retrieval/utils.py
+backend/open_webui/routers/configs.py
+backend/open_webui/routers/files.py
+src/lib/components/channel/Navbar.svelte
+src/lib/components/chat/Chat.svelte
+src/lib/components/chat/Messages/Citations/CitationModal.svelte
+src/lib/components/chat/Navbar.svelte
+src/lib/components/chat/Settings/Interface.svelte
+src/lib/components/chat/SettingsModal.svelte
+src/lib/components/workspace/Models/Knowledge/Selector.svelte
+src/lib/stores/index.ts
+src/routes/(app)/notes/+page.svelte

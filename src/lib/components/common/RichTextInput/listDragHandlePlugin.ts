@@ -4,7 +4,24 @@ import { Fragment } from 'prosemirror-model';
 
 export const listPointerDragKey = new PluginKey('listPointerDrag');
 
-export function listDragHandlePlugin(options = {}) {
+interface ListDragHandleOptions {
+	itemTypeNames?: string[];
+	getEditor?: any;
+	handleTitle?: string;
+	handleInnerHTML?: string;
+	classItemWithHandle?: string;
+	classHandle?: string;
+	classDropBefore?: string;
+	classDropAfter?: string;
+	classDropInto?: string;
+	classDropOutdent?: string;
+	classDraggingGhost?: string;
+	dragThresholdPx?: number;
+	intoThresholdX?: number;
+	outdentThresholdX?: number;
+}
+
+export function listDragHandlePlugin(options: ListDragHandleOptions = {}) {
 	const {
 		itemTypeNames = ['listItem', 'taskItem', 'list_item'],
 

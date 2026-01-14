@@ -265,8 +265,18 @@ type Config = {
 	default_locale: string;
 	// START Synechron Customization
 	default_background_image: string;
+	default_background_dark_image: string;
 	chat_background_image: string;
-    enable_background_fade: boolean;
+	chat_background_dark_image: string;
+	enable_background_fade: boolean;
+	default_logo_image: string;
+	default_logo_small_image: string;
+	default_logo_dark_image: string;
+	default_logo_small_dark_image: string;
+	logo_image: string;
+	logo_small_image: string;
+	logo_dark_image: string;
+	logo_small_dark_image: string;
 	// END Synechron Customization
 	default_models: string;
 	default_prompt_suggestions: PromptSuggestion[];

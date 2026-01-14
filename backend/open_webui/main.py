@@ -1269,6 +1269,18 @@ app.state.config.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH = (
 )
 app.state.config.VOICE_MODE_PROMPT_TEMPLATE = VOICE_MODE_PROMPT_TEMPLATE
 
+########################################
+#
+# LOGO - Synechron Customization
+#
+########################################
+app.state.config.CHAT_BACKGROUND_IMAGE = CHAT_BACKGROUND_IMAGE
+app.state.config.CHAT_BACKGROUND_DARK_IMAGE = CHAT_BACKGROUND_DARK_IMAGE
+app.state.config.LOGO_IMAGE = LOGO_IMAGE
+app.state.config.LOGO_SMALL_IMAGE = LOGO_SMALL_IMAGE
+app.state.config.LOGO_DARK_IMAGE = LOGO_DARK_IMAGE
+app.state.config.LOGO_SMALL_DARK_IMAGE = LOGO_SMALL_DARK_IMAGE
+app.state.config.ENABLE_BACKGROUND_FADE = ENABLE_BACKGROUND_FADE
 
 ########################################
 #

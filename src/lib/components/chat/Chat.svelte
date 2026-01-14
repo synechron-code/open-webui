@@ -530,7 +530,8 @@
     // Reactive statement to update backgroundImage based on conditions
     $: {
         const darkMode = $isDarkMode; // Access the value of isDarkMode
-        backgroundImage = darkMode ? $config.chat_background_dark_image : $config.chat_background_image;
+        backgroundImage = darkMode ? ($config?.chat_background_dark_image || "") : ($config?.chat_background_image || "");
+        console.log("Background image updated:", { darkMode, backgroundImage, config: $config });
     };
     // End of Synechron Customization
 
